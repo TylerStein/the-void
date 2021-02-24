@@ -130,8 +130,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 66559418}
+  - component: {fileID: 66559416}
   - component: {fileID: 66559417}
   - component: {fileID: 66559415}
+  - component: {fileID: 66559419}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -165,6 +167,19 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
+--- !u!114 &66559416
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 66559414}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c7a8fff0b080bdb40a4695637c5c9733, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  movement: {fileID: 66559417}
 --- !u!114 &66559417
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -179,8 +194,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   movementSettings: {fileID: 11400000, guid: a64906168e6834243a2c5866602231de, type: 2}
   velocity: {x: 0, y: 0}
-  force: {x: 0, y: 0}
-  ground: 0
+  isGrounded: 0
+  groundContact: {fileID: 66559415}
+  moveInput: 0
+  jumpInput: 0
+  lastJumpInput: 0
+  isReversing: 0
+  colliderLayerMask:
+    serializedVersion: 2
+    m_Bits: 0
+  overlapColliders:
+  - {fileID: 0}
 --- !u!4 &66559418
 Transform:
   m_ObjectHideFlags: 0
@@ -189,13 +213,34 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 66559414}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.5, z: 0}
+  m_LocalPosition: {x: 0, y: 2.75, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1069992458}
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!50 &66559419
+Rigidbody2D:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 66559414}
+  m_BodyType: 1
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDrag: 0
+  m_AngularDrag: 0.05
+  m_GravityScale: 1
+  m_Material: {fileID: 0}
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 1
+  m_Constraints: 4
 --- !u!1 &248807552
 GameObject:
   m_ObjectHideFlags: 0
@@ -282,7 +327,7 @@ TilemapRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 220637111
-  m_SortingLayer: -2
+  m_SortingLayer: 1
   m_SortingOrder: 0
   m_ChunkSize: {x: 32, y: 32, z: 32}
   m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
@@ -643,6 +688,78 @@ Tilemap:
       m_TileColorIndex: 0
       m_TileObjectToInstantiateIndex: 65535
       m_AllTileFlags: 1073741825
+  - first: {x: -5, y: 0, z: 0}
+    second:
+      serializedVersion: 2
+      m_TileIndex: 5
+      m_TileSpriteIndex: 5
+      m_TileMatrixIndex: 0
+      m_TileColorIndex: 0
+      m_TileObjectToInstantiateIndex: 65535
+      m_AllTileFlags: 1073741825
+  - first: {x: -4, y: 0, z: 0}
+    second:
+      serializedVersion: 2
+      m_TileIndex: 5
+      m_TileSpriteIndex: 5
+      m_TileMatrixIndex: 0
+      m_TileColorIndex: 0
+      m_TileObjectToInstantiateIndex: 65535
+      m_AllTileFlags: 1073741825
+  - first: {x: 2, y: 0, z: 0}
+    second:
+      serializedVersion: 2
+      m_TileIndex: 5
+      m_TileSpriteIndex: 5
+      m_TileMatrixIndex: 0
+      m_TileColorIndex: 0
+      m_TileObjectToInstantiateIndex: 65535
+      m_AllTileFlags: 1073741825
+  - first: {x: 3, y: 0, z: 0}
+    second:
+      serializedVersion: 2
+      m_TileIndex: 5
+      m_TileSpriteIndex: 5
+      m_TileMatrixIndex: 0
+      m_TileColorIndex: 0
+      m_TileObjectToInstantiateIndex: 65535
+      m_AllTileFlags: 1073741825
+  - first: {x: -5, y: 1, z: 0}
+    second:
+      serializedVersion: 2
+      m_TileIndex: 5
+      m_TileSpriteIndex: 5
+      m_TileMatrixIndex: 0
+      m_TileColorIndex: 0
+      m_TileObjectToInstantiateIndex: 65535
+      m_AllTileFlags: 1073741825
+  - first: {x: -4, y: 1, z: 0}
+    second:
+      serializedVersion: 2
+      m_TileIndex: 5
+      m_TileSpriteIndex: 5
+      m_TileMatrixIndex: 0
+      m_TileColorIndex: 0
+      m_TileObjectToInstantiateIndex: 65535
+      m_AllTileFlags: 1073741825
+  - first: {x: 2, y: 1, z: 0}
+    second:
+      serializedVersion: 2
+      m_TileIndex: 5
+      m_TileSpriteIndex: 5
+      m_TileMatrixIndex: 0
+      m_TileColorIndex: 0
+      m_TileObjectToInstantiateIndex: 65535
+      m_AllTileFlags: 1073741825
+  - first: {x: 3, y: 1, z: 0}
+    second:
+      serializedVersion: 2
+      m_TileIndex: 5
+      m_TileSpriteIndex: 5
+      m_TileMatrixIndex: 0
+      m_TileColorIndex: 0
+      m_TileObjectToInstantiateIndex: 65535
+      m_AllTileFlags: 1073741825
   m_AnimatedTiles: {}
   m_TileAssetArray:
   - m_RefCount: 1
@@ -655,7 +772,7 @@ Tilemap:
     m_Data: {fileID: 11400000, guid: 14cfbf45ff2dcfe44845bc1429e4e91a, type: 2}
   - m_RefCount: 1
     m_Data: {fileID: 11400000, guid: 400603d008895a649bf8c260f6b1f3bf, type: 2}
-  - m_RefCount: 1
+  - m_RefCount: 9
     m_Data: {fileID: 11400000, guid: d3d3cc5fc60220141b68345e91a20ece, type: 2}
   m_TileSpriteArray:
   - m_RefCount: 1
@@ -672,11 +789,11 @@ Tilemap:
       type: 3}
   - m_RefCount: 1
     m_Data: {fileID: 10829788927021109, guid: bd0c324554f7c534cac98f84ff9cf46b, type: 3}
-  - m_RefCount: 1
+  - m_RefCount: 9
     m_Data: {fileID: -1920148513909414618, guid: bd0c324554f7c534cac98f84ff9cf46b,
       type: 3}
   m_TileMatrixArray:
-  - m_RefCount: 38
+  - m_RefCount: 46
     m_Data:
       e00: 1
       e01: 0
@@ -695,13 +812,13 @@ Tilemap:
       e32: 0
       e33: 1
   m_TileColorArray:
-  - m_RefCount: 38
+  - m_RefCount: 46
     m_Data: {r: 1, g: 1, b: 1, a: 1}
   m_TileObjectToInstantiateArray: []
   m_AnimationFrameRate: 1
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_Origin: {x: -10, y: -2, z: 0}
-  m_Size: {x: 19, y: 2, z: 1}
+  m_Size: {x: 19, y: 4, z: 1}
   m_TileAnchor: {x: 0.5, y: 0.5, z: 0}
   m_TileOrientation: 0
   m_TileOrientationMatrix:
@@ -1145,8 +1262,8 @@ MonoBehaviour:
   m_ActionEvents:
   - m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 66559417}
-        m_MethodName: Move
+      - m_Target: {fileID: 66559416}
+        m_MethodName: OnMove
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1164,8 +1281,8 @@ MonoBehaviour:
     m_ActionName: Player/Look[/Mouse/delta]
   - m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 66559417}
-        m_MethodName: Jump
+      - m_Target: {fileID: 66559416}
+        m_MethodName: OnJump
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

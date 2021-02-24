@@ -5,10 +5,13 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "New Character2DMovementSettings", menuName = "2D Movement Settings", order = 1)]
 public class Character2DMovementSettings : ScriptableObject
 {
-    public float groundMoveForce = 1f;
-    public float jumpForce = 3f;
+    public float jumpForce = 50f;
 
-    public Vector2 maxVelocity = new Vector2(10f, 10f);
+    public float groundMoveForce = 10f;
+    public float groundReverseForce = 100f;
+    public float groundBrakeForce = 50f;
+    public float groundMaxVelocity = 20f;
 
     public Vector2 gravity = new Vector2(0f, -9.8f);
+    public float gravityMinVelocity = -30f;
 }

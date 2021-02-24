@@ -38,12 +38,12 @@ TagManager:
   - 
   - 
   m_SortingLayers:
-  - name: StandardTiles
-    uniqueID: 220637111
-    locked: 0
   - name: BackgroundTiles
     uniqueID: 3743965065
     locked: 0
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: StandardTiles
+    uniqueID: 220637111
     locked: 0

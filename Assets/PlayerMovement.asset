@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 127ed506fa1a51745b6165193992ce9a, type: 3}
   m_Name: PlayerMovement
   m_EditorClassIdentifier: 
-  jumpForce: 34
-  groundMoveForce: 100
-  groundReverseForce: 500
+  jumpForce: 30
+  groundMoveForce: 20
+  groundReverseForce: 400
   groundBrakeForce: 250
-  groundMaxVelocity: 20
+  groundMaxVelocity: 10
   gravity: {x: 0, y: -150}
   gravityMinVelocity: -50
   collisionSolverIterations: 3

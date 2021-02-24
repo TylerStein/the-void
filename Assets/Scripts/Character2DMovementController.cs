@@ -8,6 +8,8 @@ using UnityEngine.InputSystem.Interactions;
 public class Character2DMovementController : MonoBehaviour
 {
     public Character2DMovementSettings movementSettings;
+    public Bounds worldBounds = new Bounds();
+    public Transform respawn;
 
     [SerializeField] private Vector2 velocity = Vector2.zero;
 
@@ -74,8 +76,14 @@ public class Character2DMovementController : MonoBehaviour
     }
 
     private void Update() {
+        float deltaTime = Time.deltaTime;
+
+        if (worldBounds.Contains(transform.position) == false) {
+            transform.position = respawn.position;
+        }
+
         if (!isGrounded) {
-            velocity += movementSettings.gravity * Time.deltaTime;
+            velocity += movementSettings.gravity * deltaTime;
             if (velocity.y < movementSettings.gravityMinVelocity) {
                 velocity.y = movementSettings.gravityMinVelocity;
             }
@@ -85,12 +93,12 @@ public class Character2DMovementController : MonoBehaviour
         if (moveInput != 0) {
             if (Mathf.Sign(moveInput) != Mathf.Sign(velocity.x)) {
                 isReversing = true;
-                velocity.x = Mathf.MoveTowards(velocity.x, movementSettings.groundMaxVelocity * moveInput, movementSettings.groundReverseForce * Time.deltaTime);
+                velocity.x = Mathf.MoveTowards(velocity.x, movementSettings.groundMaxVelocity * moveInput, movementSettings.groundReverseForce * deltaTime);
             } else {
-                velocity.x = Mathf.MoveTowards(velocity.x, movementSettings.groundMaxVelocity * moveInput, movementSettings.groundMoveForce * Time.deltaTime);
+                velocity.x = Mathf.MoveTowards(velocity.x, movementSettings.groundMaxVelocity * moveInput, movementSettings.groundMoveForce * deltaTime);
             }
         } else {
-            velocity.x = Mathf.MoveTowards(velocity.x, 0f, movementSettings.groundBrakeForce * Time.deltaTime);
+            velocity.x = Mathf.MoveTowards(velocity.x, 0f, movementSettings.groundBrakeForce * deltaTime);
         }
 
         if (jumpInput && isGrounded) {
@@ -100,29 +108,38 @@ public class Character2DMovementController : MonoBehaviour
             lastJumpInput = true;
         }
 
-        transform.position += (Vector3)(velocity * Time.deltaTime);
-
+        Vector3 iterVelocity = velocity * deltaTime / movementSettings.collisionSolverIterations;
         isGrounded = false;
-        Collider2D[] hits = Physics2D.OverlapBoxAll(transform.position, collider.size, 0f);
-        foreach (Collider2D hit in hits) {
-            if (hit == collider) continue;
+        for (int i = 0; i < movementSettings.collisionSolverIterations; i++) {
+            transform.position += iterVelocity;
+            Collider2D[] hits = Physics2D.OverlapBoxAll(transform.position, collider.size, 0f);
+            foreach (Collider2D hit in hits) {
+                if (hit == collider) continue;
 
-            ColliderDistance2D colliderDistance = hit.Distance(collider);
-            if (colliderDistance.isOverlapped) {
-                Debug.DrawLine(colliderDistance.pointA, colliderDistance.pointB, Color.red);
-                transform.Translate(colliderDistance.pointA - colliderDistance.pointB);
-                float hitAngle = Vector2.Angle(colliderDistance.normal, Vector2.up);
-                if (hitAngle < 90f && velocity.y <= 0f) {
-                    isGrounded = true;
-                    velocity.y = 0f;
+                ColliderDistance2D colliderDistance = hit.Distance(collider);
+                if (colliderDistance.isOverlapped) {
+                    Debug.DrawLine(colliderDistance.pointA, colliderDistance.pointB, Color.red);
+                    float hitAngle = Vector2.Angle(colliderDistance.normal, Vector2.up);
+                    if (hit is EdgeCollider2D) {
+                        if (hitAngle > 90f && velocity.y > 0f) {
+                            continue;
+                        }
+                    }
+
+                    Vector3 offset = colliderDistance.pointA - colliderDistance.pointB;
+                    transform.Translate(offset);
+                    if (hitAngle < 90f && velocity.y <= 0f) {
+                        isGrounded = true;
+                        velocity.y = 0f;
+                    }
                 }
             }
         }
+
     }
 
     public void OnDrawGizmos() {
-        if (collider != null) {
-            //
-        }
+        Gizmos.color = Color.blue;
+        Gizmos.DrawWireCube(worldBounds.center, worldBounds.size);
     }
 }

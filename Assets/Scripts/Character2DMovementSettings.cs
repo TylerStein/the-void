@@ -14,4 +14,6 @@ public class Character2DMovementSettings : ScriptableObject
 
     public Vector2 gravity = new Vector2(0f, -9.8f);
     public float gravityMinVelocity = -30f;
+
+    public int collisionSolverIterations = 3;
 }

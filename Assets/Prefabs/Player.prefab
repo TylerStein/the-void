@@ -26,7 +26,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3279005207311854133}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0.0315, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 7831047775003359294}
@@ -71,8 +71,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: -5460587291505143249, guid: b437fbc9755cc444ea9a69e6e8e314da,
-    type: 3}
+  m_Sprite: {fileID: 21300000, guid: 05e8039e7fe639d40932a6e17a3aae4b, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -341,7 +340,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7a8fff0b080bdb40a4695637c5c9733, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  spriteRenderer: {fileID: 6446606743525839028}
   movement: {fileID: 7831047775003359293}
+  playerAnimator: {fileID: 2218455575522491186}
 --- !u!114 &7831047775003359293
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -355,6 +356,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   movementSettings: {fileID: 11400000, guid: a64906168e6834243a2c5866602231de, type: 2}
+  worldBounds:
+    m_Center: {x: 16, y: 2, z: 0}
+    m_Extent: {x: 28, y: 16, z: 0}
+  respawn: {fileID: 0}
   velocity: {x: 0, y: 0}
   isGrounded: 0
   groundContact: {fileID: 7831047775003359283}
@@ -380,7 +385,7 @@ BoxCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0, y: -0.064}
+  m_Offset: {x: 0, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0.049999997, y: 0.049999997, z: 0.049999997, w: 0.049999997}
     pivot: {x: 0.5, y: 0.5}
@@ -391,7 +396,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 0.75, y: 0.875}
+  m_Size: {x: 0.375, y: 0.44}
   m_EdgeRadius: 0
 --- !u!50 &7831047775003359295
 Rigidbody2D:

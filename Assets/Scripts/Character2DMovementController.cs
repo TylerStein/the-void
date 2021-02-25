@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Interactions;
+using UnityEngine.Events;
 
 [RequireComponent(typeof(Collider2D))]
 public class Character2DMovementController : MonoBehaviour
@@ -26,6 +27,20 @@ public class Character2DMovementController : MonoBehaviour
 
     private new Transform transform;
     private new BoxCollider2D collider;
+
+    public UnityEvent respawnEvent = new UnityEvent();
+
+    /**
+     * Mechanic: Jump After Ledge
+     * Rule: The player can jump if they are no longer grounded within a grace period
+     *       The grace period only applies if the player did not jump to leave the grounded state
+     */
+
+    /**
+     * Mechanic: Hold to Jump Further
+     * Rule: The player can hold down the jump button to keep an increase cap on their airborne velocity
+     *       Releasing the jump button eases the max velocity down to the regular cap
+     */
 
     public float MoveInput { get => moveInput; set => moveInput = value; }
     public bool JumpInput { get => jumpInput; set {
@@ -79,6 +94,7 @@ public class Character2DMovementController : MonoBehaviour
         float deltaTime = Time.deltaTime;
 
         if (worldBounds.Contains(transform.position) == false) {
+            respawnEvent.Invoke();
             transform.position = respawn.position;
         }
 

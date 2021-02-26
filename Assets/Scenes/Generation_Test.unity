@@ -1804,8 +1804,9 @@ MonoBehaviour:
   playerAnimator: {fileID: 2218455577176116379}
   jumpCheckOffset: {x: 0.5, y: 0}
   jumpCheckDistance: 10
-  enableProjection: 0
-  projectionTimestep: 0.16
+  enableProjection: 1
+  projectionIterations: 32
+  projectionTimestep: 0.03
   saveState:
     position: {x: 0, y: 0, z: 0}
     velocity: {x: 0, y: 0}
@@ -1819,39 +1820,6 @@ MonoBehaviour:
       serializedVersion: 2
       m_Bits: 0
     overlapColliders: []
-  projectionPoints:
-  - {x: 0, y: 0}
-  - {x: 0, y: 0}
-  - {x: 0, y: 0}
-  - {x: 0, y: 0}
-  - {x: 0, y: 0}
-  - {x: 0, y: 0}
-  - {x: 0, y: 0}
-  - {x: 0, y: 0}
-  - {x: 0, y: 0}
-  - {x: 0, y: 0}
-  - {x: 0, y: 0}
-  - {x: 0, y: 0}
-  - {x: 0, y: 0}
-  - {x: 0, y: 0}
-  - {x: 0, y: 0}
-  - {x: 0, y: 0}
-  - {x: 0, y: 0}
-  - {x: 0, y: 0}
-  - {x: 0, y: 0}
-  - {x: 0, y: 0}
-  - {x: 0, y: 0}
-  - {x: 0, y: 0}
-  - {x: 0, y: 0}
-  - {x: 0, y: 0}
-  - {x: 0, y: 0}
-  - {x: 0, y: 0}
-  - {x: 0, y: 0}
-  - {x: 0, y: 0}
-  - {x: 0, y: 0}
-  - {x: 0, y: 0}
-  - {x: 0, y: 0}
-  - {x: 0, y: 0}
 --- !u!114 &7831047775151259825
 MonoBehaviour:
   m_ObjectHideFlags: 0

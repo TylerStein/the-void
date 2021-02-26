@@ -2,6 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/**
+ * Projection Loop:
+ *  - Step Movement with Forward Movement
+ *  - Check if can jump:
+ *      - Step Jump with Forward Movement
+ *      - Check if successful landing
+ *  - Jump if should jump else continue
+ */
+
 public class AIPlayer : MonoBehaviour
 {
     public SpriteRenderer spriteRenderer;
@@ -14,46 +23,131 @@ public class AIPlayer : MonoBehaviour
     //public bool isJumping = false;
     public bool enableProjection = false;
 
-    public const int projectionIteractions = 32;
+    public int projectionIterations = 32;
     public float projectionTimestep = 0.16f;
 
     public Character2DMovementState saveState;
-    public Vector2[] projectionPoints = new Vector2[projectionIteractions];
+    //public Vector2[] projectionPoints = new Vector2[projectionIteractions];
 
     private void Update() {
-        // playerAnimator.SetBool("moving", movement.MoveInput != 0);
-        saveState = movement.ToState();
+        //if (projectionPoints.Length != projectionIteractions) {
+        //    projectionPoints = new Vector2[projectionIteractions];
+        //}
 
+        // AI Stuff
         if (enableProjection) {
-            movement.disableRespawn = true;
+            bool canJump = movement.isGrounded && movement.velocity.y <= 0f;
 
-            Vector3 lastPosition = movement.transform.position;
-            for (int i = 0; i < projectionIteractions; i++) {
-                movement.UpdateMovement(projectionTimestep);
+            bool doMove, doJump;
+            ProjectMovement_v1(out doMove, out doJump);
 
-                Move(1f);
-                if (CheckShouldJump()) {
-                    Jump(true);
-                } else {
-                    Jump(false);
-                }
-
-                Debug.DrawLine(lastPosition, movement.transform.position, Color.white, Time.deltaTime);
-                lastPosition = transform.position;
+            if (doMove) {
+                movement.Move(1f);
             }
 
+            if (canJump && doJump) {
+                movement.BeginJump();
+                playerAnimator.SetBool("jumping", true);
+            } else {
+                movement.EndJump();
+                playerAnimator.SetBool("jumping", false);
+            }
+        }
 
-            movement.disableRespawn = false;
+        // Animation stuff
+        if (movement.MoveInput != 0) {
+            spriteRenderer.flipX = movement.MoveInput < 0f;
+            playerAnimator.SetBool("moving", true);
+        } else {
+            playerAnimator.SetBool("moving", false);
+        }
+    }
+
+    private void ProjectMovement_v1(out bool doMove, out bool doJump) {
+        saveState = movement.ToState();
+        movement.disableRespawn = true;
+
+        doMove = true;
+        doJump = false;
+
+        Vector3 lastPosition = movement.transform.position;
+        for (int i = 0; i < projectionIterations; i++) {
+            bool canJump = movement.velocity.y <= 0f && movement.isGrounded;
+            bool projectJump = false;
+
+            if (canJump) {
+                Vector3 lastJumpPosition = movement.transform.position;
+                Character2DMovementState jumpSave = movement.ToState();
+                for (int j = 0; j < projectionIterations; j++) {
+                    if (j == 0) {
+                        movement.BeginJump();
+                    } else if (movement.velocity.y <= 0f && movement.isGrounded) {
+                        movement.EndJump();
+                        projectJump = true;
+                        break;
+                    }
+
+                    movement.Move(1f);
+                    movement.UpdateMovement(projectionTimestep);
+
+                    Debug.DrawLine(lastJumpPosition, movement.transform.position, Color.yellow, Time.deltaTime);
+                    lastJumpPosition = movement.transform.position;
+                }
+                movement.FromState(jumpSave);
+            }
+
+            if (projectJump) {
+                if (i == 0) {
+                    doJump = true;
+                    break;
+                } else {
+                    movement.BeginJump();
+                }
+            }
+
+            movement.Move(1f);
+            movement.UpdateMovement(projectionTimestep);
+
+            Debug.DrawLine(lastPosition, movement.transform.position, Color.white, Time.deltaTime);
+            lastPosition = transform.position;
         }
 
         movement.FromState(saveState);
+        movement.disableRespawn = false;
+    }
 
-        Move(1f);
-        if (CheckShouldJump()) {
-            Jump(true);
-        } else {
-            Jump(false);
+    private bool ProjectJump(ref int currentIterations, int maxIterations) {
+        Character2DMovementState saveState = movement.ToState();
+
+        bool safeJump = false;
+        bool didJump = false;
+
+        Vector3 lastPosition = movement.transform.position;
+        for (int i = currentIterations; i < maxIterations; i++) {
+            if (movement.isGrounded) {
+                if (didJump) {
+                    safeJump = true;
+                    break;
+                } else {
+                    movement.BeginJump();
+                }
+            }
+
+            if (!didJump) {
+                movement.BeginJump();
+            }
+
+
+            Move(1f);
+            movement.UpdateMovement(projectionTimestep);
+
+            Debug.DrawLine(lastPosition, movement.transform.position, Color.yellow, Time.deltaTime);
+            lastPosition = transform.position;
         }
+
+
+        movement.FromState(saveState);
+        return safeJump;
     }
 
     public bool CheckShouldJump() {

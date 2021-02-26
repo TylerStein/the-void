@@ -19,4 +19,4 @@ MonoBehaviour:
   groundMaxVelocity: 10
   gravity: {x: 0, y: -150}
   gravityMinVelocity: -50
-  collisionSolverIterations: 3
+  collisionSolverIterations: 6

@@ -5,6 +5,21 @@ using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Interactions;
 using UnityEngine.Events;
 
+[System.Serializable]
+public struct Character2DMovementState
+{
+    [SerializeField] public Vector3 position;
+    [SerializeField] public Vector2 velocity;
+    [SerializeField] public bool isGrounded;
+    [SerializeField] public Collider2D groundContact;
+    [SerializeField] public float moveInput;
+    [SerializeField] public bool jumpInput;
+    [SerializeField] public bool lastJumpInput;
+    [SerializeField] public bool isReversing;
+    [SerializeField] public LayerMask colliderLayerMask;
+    [SerializeField] public Collider2D[] overlapColliders;
+}
+
 [RequireComponent(typeof(Collider2D))]
 public class Character2DMovementController : MonoBehaviour
 {
@@ -12,18 +27,20 @@ public class Character2DMovementController : MonoBehaviour
     public Bounds worldBounds = new Bounds();
     public Transform respawn;
 
-    [SerializeField] private Vector2 velocity = Vector2.zero;
+    [SerializeField] public Vector2 velocity = Vector2.zero;
 
-    [SerializeField] private bool isGrounded = false;
-    [SerializeField] private Collider2D groundContact = null;
+    [SerializeField] public bool isGrounded = false;
+    [SerializeField] public Collider2D groundContact = null;
 
-    [SerializeField] private float moveInput = 0f;
-    [SerializeField] private bool jumpInput = false;
-    [SerializeField] private bool lastJumpInput = false;
+    [SerializeField] public float moveInput = 0f;
+    [SerializeField] public bool jumpInput = false;
+    [SerializeField] public bool lastJumpInput = false;
 
-    [SerializeField] private bool isReversing = false;
-    [SerializeField] private LayerMask colliderLayerMask;
-    [SerializeField] private Collider2D[] overlapColliders = new Collider2D[1];
+    [SerializeField] public bool isReversing = false;
+    [SerializeField] public LayerMask colliderLayerMask;
+    [SerializeField] public Collider2D[] overlapColliders = new Collider2D[1];
+
+    [SerializeField] public bool disableRespawn = false;
 
     private new Transform transform;
     private new BoxCollider2D collider;
@@ -91,9 +108,11 @@ public class Character2DMovementController : MonoBehaviour
     }
 
     private void Update() {
-        float deltaTime = Time.deltaTime;
+        UpdateMovement(Time.deltaTime);
+    }
 
-        if (worldBounds.Contains(transform.position) == false) {
+    public void UpdateMovement(float deltaTime) {
+        if (worldBounds.Contains(transform.position) == false && !disableRespawn) {
             respawnEvent.Invoke();
             transform.position = respawn.position;
         }
@@ -152,6 +171,34 @@ public class Character2DMovementController : MonoBehaviour
             }
         }
 
+    }
+
+    public Character2DMovementState ToState() {
+        return new Character2DMovementState() {
+            position = transform.position,
+            velocity = velocity,
+            isGrounded = isGrounded,
+            groundContact = groundContact,
+            moveInput = moveInput,
+            jumpInput = jumpInput,
+            lastJumpInput = lastJumpInput,
+            isReversing = isReversing,
+            colliderLayerMask = colliderLayerMask,
+            overlapColliders = overlapColliders,
+        };
+    }
+
+    public void FromState(Character2DMovementState state) {
+        transform.position = state.position;
+        velocity = state.velocity;
+        isGrounded = state.isGrounded;
+        groundContact = state.groundContact;
+        moveInput = state.moveInput;
+        jumpInput = state.jumpInput;
+        lastJumpInput = state.lastJumpInput;
+        isReversing = state.isReversing;
+        colliderLayerMask = state.colliderLayerMask;
+        overlapColliders = state.overlapColliders;
     }
 
     public void OnDrawGizmos() {

@@ -16,7 +16,7 @@ public struct Character2DMovementState
     [SerializeField] public bool jumpInput;
     [SerializeField] public bool lastJumpInput;
     [SerializeField] public bool isReversing;
-    [SerializeField] public LayerMask colliderLayerMask;
+    [SerializeField] public ContactFilter2D colliderContactFilter;
     [SerializeField] public Collider2D[] overlapColliders;
 }
 
@@ -30,6 +30,7 @@ public class Character2DMovementController : MonoBehaviour
     [SerializeField] public Vector2 velocity = Vector2.zero;
 
     [SerializeField] public bool isGrounded = false;
+    [SerializeField] public bool isJumping = false;
     [SerializeField] public Collider2D groundContact = null;
 
     [SerializeField] public float moveInput = 0f;
@@ -37,13 +38,16 @@ public class Character2DMovementController : MonoBehaviour
     [SerializeField] public bool lastJumpInput = false;
 
     [SerializeField] public bool isReversing = false;
-    [SerializeField] public LayerMask colliderLayerMask;
-    [SerializeField] public Collider2D[] overlapColliders = new Collider2D[1];
+    [SerializeField] public ContactFilter2D colliderContactFilter;
+    [SerializeField] public Collider2D[] overlapColliders = new Collider2D[3];
+    [SerializeField] public RaycastHit2D[] raycastHits = new RaycastHit2D[3];
 
     [SerializeField] public bool disableRespawn = false;
+    [SerializeField] public int overlapFrames = 0;
 
     private new Transform transform;
     private new BoxCollider2D collider;
+    private new Rigidbody2D rigidbody;
 
     public UnityEvent respawnEvent = new UnityEvent();
 
@@ -86,12 +90,7 @@ public class Character2DMovementController : MonoBehaviour
     }
 
     public bool CheckOverlap(Vector3 position, bool useTriggers = false) {
-        ContactFilter2D contactFilter = new ContactFilter2D();
-        contactFilter.useLayerMask = true;
-        contactFilter.layerMask = colliderLayerMask;
-        contactFilter.useTriggers = useTriggers;
-
-        int count = Physics2D.OverlapBox(collider.bounds.center, collider.bounds.size, 0f, contactFilter, overlapColliders);
+        int count = Physics2D.OverlapBox(collider.bounds.center, collider.bounds.size, 0f, colliderContactFilter, overlapColliders);
         if (count > 1) {
             Debug.Log("CheckOverlap Collided with " + overlapColliders[0].name, this);
             return true;
@@ -104,20 +103,39 @@ public class Character2DMovementController : MonoBehaviour
         transform = GetComponent<Transform>();
         collider = GetComponent<BoxCollider2D>();
 
-        colliderLayerMask = Physics2D.GetLayerCollisionMask(gameObject.layer);
+        // colliderLayerMask = Physics2D.GetLayerCollisionMask(gameObject.layer);
+
+        ContactFilter2D contactFilter = new ContactFilter2D();
+        contactFilter.useLayerMask = true;
+        contactFilter.layerMask = Physics2D.GetLayerCollisionMask(gameObject.layer);
+        contactFilter.useTriggers = false;
+        colliderContactFilter = contactFilter;
     }
 
     private void Update() {
-        UpdateMovement(Time.deltaTime);
-    }
+        // transform.position = frameEndPosition;
 
-    public void UpdateMovement(float deltaTime) {
         if (worldBounds.Contains(transform.position) == false && !disableRespawn) {
             respawnEvent.Invoke();
             transform.position = respawn.position;
+            velocity = Vector2.zero;
+        } else {
+            UpdateMovement(Time.deltaTime);
         }
+    }
 
+    private void FixedUpdate() {
+       // UpdateMovement(Time.fixedDeltaTime);
+    }
+
+    public void UpdateMovement(float deltaTime) {
         if (!isGrounded) {
+            if (isJumping) {
+                velocity.y = Mathf.Min(velocity.y, movementSettings.boostJumpMaxVelocity);
+            } else {
+                velocity.y = Mathf.Min(velocity.y, movementSettings.jumpMaxVelocity);
+            }
+
             velocity += movementSettings.gravity * deltaTime;
             if (velocity.y < movementSettings.gravityMinVelocity) {
                 velocity.y = movementSettings.gravityMinVelocity;
@@ -139,38 +157,75 @@ public class Character2DMovementController : MonoBehaviour
         if (jumpInput && isGrounded) {
             if (!lastJumpInput) {
                 velocity.y = movementSettings.jumpForce;
+                isJumping = true;
             }
             lastJumpInput = true;
         }
 
-        Vector3 iterVelocity = velocity * deltaTime / movementSettings.collisionSolverIterations;
+        if (!jumpInput) {
+            isJumping = false;
+        }
+
         isGrounded = false;
-        for (int i = 0; i < movementSettings.collisionSolverIterations; i++) {
-            transform.position += iterVelocity;
-            Collider2D[] hits = Physics2D.OverlapBoxAll(transform.position, collider.size, 0f);
+
+        Vector3 move = velocity * deltaTime;
+        int hitCount = collider.Cast(move, raycastHits, move.magnitude);
+        Debug.DrawRay(transform.position, move, Color.blue);
+
+        bool hasCollision = false;
+
+        Vector3 updatedPosition = transform.position;
+        for (int i = 0; i < hitCount; i++) {
+            if (raycastHits[i].collider == collider) continue;
+            Debug.DrawLine(updatedPosition, raycastHits[i].point, Color.magenta);
+            transform.position = raycastHits[i].centroid;
+            
+            Collider2D[] hits = Physics2D.OverlapBoxAll(raycastHits[i].centroid, collider.size, 0f);
             foreach (Collider2D hit in hits) {
                 if (hit == collider) continue;
-
+                
                 ColliderDistance2D colliderDistance = hit.Distance(collider);
-                if (colliderDistance.isOverlapped) {
-                    Debug.DrawLine(colliderDistance.pointA, colliderDistance.pointB, Color.red);
-                    float hitAngle = Vector2.Angle(colliderDistance.normal, Vector2.up);
-                    if (hit is EdgeCollider2D) {
-                        if (hitAngle > 90f && velocity.y > 0f) {
-                            continue;
-                        }
-                    }
+                Collider2D hitCollider;
+                float hitAngle;
 
-                    Vector3 offset = colliderDistance.pointA - colliderDistance.pointB;
-                    transform.Translate(offset);
-                    if (hitAngle < 90f && velocity.y <= 0f) {
-                        isGrounded = true;
-                        velocity.y = 0f;
+                if (colliderDistance.isOverlapped) {
+                    hitCollider = hit;
+                    transform.Translate(colliderDistance.pointA - colliderDistance.pointB);
+                    hitAngle = Vector2.Angle(colliderDistance.normal, Vector2.up);
+                    Debug.DrawLine(colliderDistance.pointA, colliderDistance.pointB, Color.red);
+                } else {
+                    hitCollider = raycastHits[i].collider;
+                    hitAngle = Vector2.Angle(raycastHits[i].normal, Vector2.up);
+                }
+
+                if (hit is EdgeCollider2D) {
+                    if (hitAngle > 90f && velocity.y > 0f) {
+                        continue;
                     }
                 }
+                    
+                if (hitAngle < 90f && velocity.y <= 0f) {
+                    isGrounded = true;
+                    velocity.y = 0f;
+                    if (!jumpInput) {
+                        isJumping = false;
+                    }
+                }
+
+                hasCollision = true;
             }
         }
 
+        if (hasCollision) {
+            overlapFrames++;
+            if (overlapFrames > 1) {
+                Debug.Log("OverlapFrames " + overlapFrames);
+            }
+        }  else {
+            overlapFrames = 0;
+        }
+
+        transform.position += (Vector3)velocity * deltaTime;
     }
 
     public Character2DMovementState ToState() {
@@ -183,7 +238,7 @@ public class Character2DMovementController : MonoBehaviour
             jumpInput = jumpInput,
             lastJumpInput = lastJumpInput,
             isReversing = isReversing,
-            colliderLayerMask = colliderLayerMask,
+            colliderContactFilter = colliderContactFilter,
             overlapColliders = overlapColliders,
         };
     }
@@ -197,7 +252,7 @@ public class Character2DMovementController : MonoBehaviour
         jumpInput = state.jumpInput;
         lastJumpInput = state.lastJumpInput;
         isReversing = state.isReversing;
-        colliderLayerMask = state.colliderLayerMask;
+        colliderContactFilter = state.colliderContactFilter;
         overlapColliders = state.overlapColliders;
     }
 

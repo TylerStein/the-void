@@ -1389,12 +1389,12 @@ MonoBehaviour:
   platformPrefab: {fileID: 165930000127910926, guid: b05050d8f333ecd4e93b24c75f2e88c2,
     type: 3}
   levelLength: 64
-  minPlatformLength: 1
-  maxPlatformLength: 8
+  minPlatformLength: 6
+  maxPlatformLength: 12
   minPlatformDistanceX: 1
-  maxPlatformDistanceX: 4
+  maxPlatformDistanceX: 2
   minVerticalPlatformDistance: 2
-  maxConcurrentPlatforms: 3
+  maxConcurrentPlatforms: 2
   levelMinY: 0
   levelMaxY: 24
   spawnedObjects: []
@@ -1544,6 +1544,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7831047775003359295, guid: 3bd6edc50a347c948a41931b44ea7cbb,
+        type: 3}
+      propertyPath: m_BodyType
+      value: 2
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 3bd6edc50a347c948a41931b44ea7cbb, type: 3}

@@ -16,4 +16,6 @@ public class Character2DMovementSettings : ScriptableObject
     public float gravityMinVelocity = -30f;
     public float boostJumpMaxVelocity = 30f;
     public float jumpMaxVelocity = 15f;
+
+    public float minStaticGroundDistance = 0.001f;
 }

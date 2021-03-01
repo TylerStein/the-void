@@ -45,6 +45,8 @@ public class Character2DMovementController : MonoBehaviour
     [SerializeField] public bool disableRespawn = false;
     [SerializeField] public int overlapFrames = 0;
 
+    [SerializeField] public float lastHitAngle = 0f;
+
     private new Transform transform;
     private new BoxCollider2D collider;
     private new Rigidbody2D rigidbody;
@@ -55,19 +57,38 @@ public class Character2DMovementController : MonoBehaviour
      * Mechanic: Jump After Ledge
      * Rule: The player can jump if they are no longer grounded within a grace period
      *       The grace period only applies if the player did not jump to leave the grounded state
-     */
-
-    /**
+     *       
      * Mechanic: Hold to Jump Further
      * Rule: The player can hold down the jump button to keep an increase cap on their airborne velocity
      *       Releasing the jump button eases the max velocity down to the regular cap
+     *       
+     * Mechanic: Air Dash
+     * Rule: The player can tap the dash button to get a brief increase of airborne velocity if not currently grounded
+     *       The velocity cap decreases back to normal to complete the dash, or resets once grounded
+     * ++++: When dashing into a ledge, above a certain height the player will "pop" upward to prevent collision
+     * 
+     * Mechanic: Ground Dash
+     * Rule: The player can hold the dash button to get an increase of ground velocity
+     *       Ramps up in a short peridod, heightened velocity stays with jump until landing (or the dash continues)
+     *       Slowing down takes longer than normal while dashing for a challenge
      */
 
+    /**
+    * Ground Check Logic
+    * 
+    * apply gravity
+    * set isGrounded false
+    * 
+    * project movement with velocity
+    * for each hit
+    *   if hit is below
+    *       set isGrounded true
+    *       set velocity y 0
+    * 
+    */ 
+
     public float MoveInput { get => moveInput; set => moveInput = value; }
-    public bool JumpInput { get => jumpInput; set {
-            jumpInput = value;
-            if (!jumpInput) lastJumpInput = false;
-    } }
+    public bool JumpInput { get => jumpInput; set => jumpInput = value; }
 
     public void BeginJump() {
         //
@@ -128,62 +149,94 @@ public class Character2DMovementController : MonoBehaviour
        // UpdateMovement(Time.fixedDeltaTime);
     }
 
-    public void UpdateMovement(float deltaTime) {
-        if (!isGrounded) {
-            if (isJumping) {
-                velocity.y = Mathf.Min(velocity.y, movementSettings.boostJumpMaxVelocity);
-            } else {
-                velocity.y = Mathf.Min(velocity.y, movementSettings.jumpMaxVelocity);
-            }
-
-            velocity += movementSettings.gravity * deltaTime;
-            if (velocity.y < movementSettings.gravityMinVelocity) {
-                velocity.y = movementSettings.gravityMinVelocity;
-            }
+    private void UpdatePhysics_Jumping(float deltaTime) {
+        velocity += movementSettings.gravity * deltaTime;
+        if (velocity.y < movementSettings.gravityMinVelocity) {
+            velocity.y = movementSettings.gravityMinVelocity;
         }
 
-        isReversing = false;
-        if (moveInput != 0) {
-            if (Mathf.Sign(moveInput) != Mathf.Sign(velocity.x)) {
-                isReversing = true;
-                velocity.x = Mathf.MoveTowards(velocity.x, movementSettings.groundMaxVelocity * moveInput, movementSettings.groundReverseForce * deltaTime);
+        if (isGrounded) {
+            // Jump input
+            if (jumpInput && !isJumping) {
+                isJumping = true;
+                velocity.y = movementSettings.jumpForce;
             } else {
-                velocity.x = Mathf.MoveTowards(velocity.x, movementSettings.groundMaxVelocity * moveInput, movementSettings.groundMoveForce * deltaTime);
+                isJumping = false;
             }
+
+        }
+
+        // Jump max upwards velocity
+        if (isJumping) {
+            velocity.y = Mathf.Min(velocity.y, movementSettings.boostJumpMaxVelocity);
+        } else {
+            velocity.y = Mathf.Min(velocity.y, movementSettings.jumpMaxVelocity);
+        }
+    }
+
+    private void UpdatePhysics_Movement(float deltaTime) {
+        // Horizontal movement
+        if (moveInput != 0) {
+            float targetMove = movementSettings.groundMaxVelocity * moveInput;
+            isReversing = Mathf.Sign(moveInput) != Mathf.Sign(velocity.x);
+            float moveSpeed = isReversing ? movementSettings.groundReverseForce : movementSettings.groundMoveForce;
+
+            velocity.x = Mathf.MoveTowards(velocity.x, targetMove, moveSpeed * deltaTime);
         } else {
             velocity.x = Mathf.MoveTowards(velocity.x, 0f, movementSettings.groundBrakeForce * deltaTime);
+            isReversing = false;
         }
 
-        if (jumpInput && isGrounded) {
-            if (!lastJumpInput) {
-                velocity.y = movementSettings.jumpForce;
-                isJumping = true;
-            }
-            lastJumpInput = true;
-        }
+        //isReversing = false;
+        //if (moveInput != 0) {
+        //    float moveSign = Mathf.Sign(moveInput);
+        //    float velSign = Mathf.Sign(velocity.x);
 
-        if (!jumpInput) {
-            isJumping = false;
-        }
+        //    if (moveSign > 0 && velSign < 0) {
+        //        isReversing = true;
+        //        velocity.x = Mathf.MoveTowards(velocity.x, movementSettings.groundMaxVelocity * moveInput, movementSettings.groundReverseForce * deltaTime);
+        //    } else if (moveSign < 0 && velSign > 0) {
+        //        isReversing = true;
+        //        velocity.x = Mathf.MoveTowards(velocity.x, movementSettings.groundMaxVelocity * moveInput, movementSettings.groundReverseForce * deltaTime);
+        //    } else {
+        //        isReversing = false;
+        //        velocity.x = Mathf.MoveTowards(velocity.x, movementSettings.groundMaxVelocity * moveInput, movementSettings.groundMoveForce * deltaTime);
+        //    }
+        //} else {
+        //    velocity.x = Mathf.MoveTowards(velocity.x, 0f, movementSettings.groundBrakeForce * deltaTime);
+        //}
 
-        isGrounded = false;
+        //if (velocity.x > 0f) {
+        //    velocity.x = Mathf.Min(velocity.x, movementSettings.groundMaxVelocity);
+        //} else {
+        //    velocity.x = Mathf.Max(velocity.x, -movementSettings.groundMaxVelocity);
+        //}
+    }
 
+    private void UpdatePhysics_Collision(float deltaTime) {
         Vector3 move = velocity * deltaTime;
         int hitCount = collider.Cast(move, raycastHits, move.magnitude);
         Debug.DrawRay(transform.position, move, Color.blue);
+        
+        isGrounded = false;
 
-        bool hasCollision = false;
-
-        Vector3 updatedPosition = transform.position;
+        // Check velocity based collider cast hit
+        Vector3 lastPosition = transform.position;
         for (int i = 0; i < hitCount; i++) {
             if (raycastHits[i].collider == collider) continue;
-            Debug.DrawLine(updatedPosition, raycastHits[i].point, Color.magenta);
+            Debug.DrawLine(lastPosition, raycastHits[i].point, Color.magenta);
             transform.position = raycastHits[i].centroid;
-            
+
+            // Check overlap details for collider based hit
             Collider2D[] hits = Physics2D.OverlapBoxAll(raycastHits[i].centroid, collider.size, 0f);
+            if (hits.Length == 0) {
+                Debug.Log("Hits length 0"); 
+                continue;
+            }
+
             foreach (Collider2D hit in hits) {
                 if (hit == collider) continue;
-                
+
                 ColliderDistance2D colliderDistance = hit.Distance(collider);
                 Collider2D hitCollider;
                 float hitAngle;
@@ -198,33 +251,34 @@ public class Character2DMovementController : MonoBehaviour
                     hitAngle = Vector2.Angle(raycastHits[i].normal, Vector2.up);
                 }
 
+                lastHitAngle = hitAngle;
                 if (hit is EdgeCollider2D) {
                     if (hitAngle > 90f && velocity.y > 0f) {
                         continue;
                     }
                 }
-                    
+
                 if (hitAngle < 90f && velocity.y <= 0f) {
                     isGrounded = true;
                     velocity.y = 0f;
-                    if (!jumpInput) {
-                        isJumping = false;
-                    }
                 }
-
-                hasCollision = true;
             }
         }
 
-        if (hasCollision) {
-            overlapFrames++;
-            if (overlapFrames > 1) {
-                Debug.Log("OverlapFrames " + overlapFrames);
-            }
-        }  else {
-            overlapFrames = 0;
-        }
+        //if (hasCollision) {
+        //    overlapFrames++;
+        //    if (overlapFrames > 1) {
+        //        Debug.Log("OverlapFrames " + overlapFrames);
+        //    }
+        //} else {
+        //    overlapFrames = 0;
+        //}
+    }
 
+    public void UpdateMovement(float deltaTime) {
+        UpdatePhysics_Jumping(deltaTime);
+        UpdatePhysics_Movement(deltaTime);
+        UpdatePhysics_Collision(deltaTime);
         transform.position += (Vector3)velocity * deltaTime;
     }
 

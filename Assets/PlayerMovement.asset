@@ -12,13 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 127ed506fa1a51745b6165193992ce9a, type: 3}
   m_Name: PlayerMovement
   m_EditorClassIdentifier: 
-  jumpForce: 30
+  jumpForce: 50
   groundMoveForce: 20
   groundReverseForce: 400
   groundBrakeForce: 250
   groundMaxVelocity: 10
   gravity: {x: 0, y: -150}
   gravityMinVelocity: -50
-  boostJumpMaxVelocity: 30
-  jumpMaxVelocity: 30
-  collisionSolverIterations: 6
+  boostJumpMaxVelocity: 32
+  jumpMaxVelocity: 5
+  jumpReturnSpeed: 1800
+  minStaticGroundDistance: 0.001

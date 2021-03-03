@@ -36,6 +36,7 @@ public class Character2DMovementController : MonoBehaviour
     [SerializeField] public float moveInput = 0f;
     [SerializeField] public bool jumpInput = false;
     [SerializeField] public bool lastJumpInput = false;
+    [SerializeField] public float maxJumpVelocity = 0f;
 
     [SerializeField] public bool isReversing = false;
     [SerializeField] public ContactFilter2D colliderContactFilter;
@@ -43,9 +44,10 @@ public class Character2DMovementController : MonoBehaviour
     [SerializeField] public RaycastHit2D[] raycastHits = new RaycastHit2D[3];
 
     [SerializeField] public bool disableRespawn = false;
-    [SerializeField] public int overlapFrames = 0;
-
     [SerializeField] public float lastHitAngle = 0f;
+
+    [SerializeField] public bool debugMovement = false;
+    [SerializeField] public float debugMovementDuration = 1.5f;
 
     private new Transform transform;
     private new BoxCollider2D collider;
@@ -134,8 +136,6 @@ public class Character2DMovementController : MonoBehaviour
     }
 
     private void Update() {
-        // transform.position = frameEndPosition;
-
         if (worldBounds.Contains(transform.position) == false && !disableRespawn) {
             respawnEvent.Invoke();
             transform.position = respawn.position;
@@ -145,8 +145,85 @@ public class Character2DMovementController : MonoBehaviour
         }
     }
 
-    private void FixedUpdate() {
-       // UpdateMovement(Time.fixedDeltaTime);
+    public void UpdateMovement(float deltaTime) {
+        UpdatePhysics_Forces(deltaTime);
+        UpdatePhysics_ClampVelocity(deltaTime);
+        UpdatePhysics_Collision(deltaTime);
+    }
+
+    private void UpdatePhysics_Forces(float deltaTime) {
+        // Vertical movement
+        velocity += movementSettings.gravity * deltaTime;
+        if (isGrounded) {
+            if (jumpInput && !lastJumpInput) {
+                isJumping = true;
+                lastJumpInput = true;
+                maxJumpVelocity = movementSettings.boostJumpMaxVelocity;
+                velocity.y = movementSettings.jumpForce;
+            }
+        }
+
+        if (!jumpInput) {
+            lastJumpInput = false;
+        }
+
+        // Horizontal movement
+        if (moveInput != 0) {
+            float targetMove = movementSettings.groundMaxVelocity * moveInput;
+            isReversing = Mathf.Sign(moveInput) != Mathf.Sign(velocity.x);
+            float moveSpeed = isReversing ? movementSettings.groundReverseForce : movementSettings.groundMoveForce;
+
+            velocity.x = Mathf.MoveTowards(velocity.x, targetMove, moveSpeed * deltaTime);
+        } else {
+            velocity.x = Mathf.MoveTowards(velocity.x, 0f, movementSettings.groundBrakeForce * deltaTime);
+            isReversing = false;
+        }
+    }
+    
+    private void UpdatePhysics_ClampVelocity(float deltaTime) {
+        velocity.x = Mathf.Clamp(velocity.x, -movementSettings.groundMaxVelocity, movementSettings.groundMaxVelocity);
+
+        if (!isJumping || !jumpInput) {
+            maxJumpVelocity = Mathf.MoveTowards(maxJumpVelocity, movementSettings.jumpMaxVelocity, deltaTime * movementSettings.jumpReturnSpeed);
+        }
+
+        velocity.y = Mathf.Clamp(velocity.y, movementSettings.gravityMinVelocity, maxJumpVelocity);
+    }
+
+    private void UpdatePhysics_Collision(float deltaTime) {
+        Vector3 move = velocity * Time.deltaTime;
+        int hitCount = collider.Cast(move.normalized, colliderContactFilter, raycastHits, move.magnitude);
+        isGrounded = false;
+        for (int i = 0; i < hitCount; i++) {
+            if (raycastHits[i].collider == collider) continue;
+
+            float hitAngle = Vector2.Angle(raycastHits[i].normal, Vector2.up);
+            lastHitAngle = hitAngle;
+
+            // Move up through ground
+            if (raycastHits[i].collider is EdgeCollider2D) {
+                if (hitAngle > 90f && velocity.y > 0f) {
+                    continue;
+                }
+            }
+
+            // Hit something solid
+            transform.position = raycastHits[i].centroid;
+            if (hitAngle < 90f) {
+                // Hit the ground, make sure we're not trying to jump
+                if (velocity.y <= 0f) {
+                    isGrounded = true;
+                    isJumping = false;
+                    velocity.y = 0f;
+                    move.y = 0f;
+                }
+            }
+        }
+
+        if (debugMovement) {
+            Debug.DrawLine(transform.position, transform.position + move, Color.yellow, debugMovementDuration);
+        }
+        transform.position += move;
     }
 
     private void UpdatePhysics_Jumping(float deltaTime) {
@@ -172,114 +249,6 @@ public class Character2DMovementController : MonoBehaviour
         } else {
             velocity.y = Mathf.Min(velocity.y, movementSettings.jumpMaxVelocity);
         }
-    }
-
-    private void UpdatePhysics_Movement(float deltaTime) {
-        // Horizontal movement
-        if (moveInput != 0) {
-            float targetMove = movementSettings.groundMaxVelocity * moveInput;
-            isReversing = Mathf.Sign(moveInput) != Mathf.Sign(velocity.x);
-            float moveSpeed = isReversing ? movementSettings.groundReverseForce : movementSettings.groundMoveForce;
-
-            velocity.x = Mathf.MoveTowards(velocity.x, targetMove, moveSpeed * deltaTime);
-        } else {
-            velocity.x = Mathf.MoveTowards(velocity.x, 0f, movementSettings.groundBrakeForce * deltaTime);
-            isReversing = false;
-        }
-
-        //isReversing = false;
-        //if (moveInput != 0) {
-        //    float moveSign = Mathf.Sign(moveInput);
-        //    float velSign = Mathf.Sign(velocity.x);
-
-        //    if (moveSign > 0 && velSign < 0) {
-        //        isReversing = true;
-        //        velocity.x = Mathf.MoveTowards(velocity.x, movementSettings.groundMaxVelocity * moveInput, movementSettings.groundReverseForce * deltaTime);
-        //    } else if (moveSign < 0 && velSign > 0) {
-        //        isReversing = true;
-        //        velocity.x = Mathf.MoveTowards(velocity.x, movementSettings.groundMaxVelocity * moveInput, movementSettings.groundReverseForce * deltaTime);
-        //    } else {
-        //        isReversing = false;
-        //        velocity.x = Mathf.MoveTowards(velocity.x, movementSettings.groundMaxVelocity * moveInput, movementSettings.groundMoveForce * deltaTime);
-        //    }
-        //} else {
-        //    velocity.x = Mathf.MoveTowards(velocity.x, 0f, movementSettings.groundBrakeForce * deltaTime);
-        //}
-
-        //if (velocity.x > 0f) {
-        //    velocity.x = Mathf.Min(velocity.x, movementSettings.groundMaxVelocity);
-        //} else {
-        //    velocity.x = Mathf.Max(velocity.x, -movementSettings.groundMaxVelocity);
-        //}
-    }
-
-    private void UpdatePhysics_Collision(float deltaTime) {
-        Vector3 move = velocity * deltaTime;
-        int hitCount = collider.Cast(move, raycastHits, move.magnitude);
-        Debug.DrawRay(transform.position, move, Color.blue);
-        
-        isGrounded = false;
-
-        // Check velocity based collider cast hit
-        Vector3 lastPosition = transform.position;
-        for (int i = 0; i < hitCount; i++) {
-            if (raycastHits[i].collider == collider) continue;
-            Debug.DrawLine(lastPosition, raycastHits[i].point, Color.magenta);
-            transform.position = raycastHits[i].centroid;
-
-            // Check overlap details for collider based hit
-            Collider2D[] hits = Physics2D.OverlapBoxAll(raycastHits[i].centroid, collider.size, 0f);
-            if (hits.Length == 0) {
-                Debug.Log("Hits length 0"); 
-                continue;
-            }
-
-            foreach (Collider2D hit in hits) {
-                if (hit == collider) continue;
-
-                ColliderDistance2D colliderDistance = hit.Distance(collider);
-                Collider2D hitCollider;
-                float hitAngle;
-
-                if (colliderDistance.isOverlapped) {
-                    hitCollider = hit;
-                    transform.Translate(colliderDistance.pointA - colliderDistance.pointB);
-                    hitAngle = Vector2.Angle(colliderDistance.normal, Vector2.up);
-                    Debug.DrawLine(colliderDistance.pointA, colliderDistance.pointB, Color.red);
-                } else {
-                    hitCollider = raycastHits[i].collider;
-                    hitAngle = Vector2.Angle(raycastHits[i].normal, Vector2.up);
-                }
-
-                lastHitAngle = hitAngle;
-                if (hit is EdgeCollider2D) {
-                    if (hitAngle > 90f && velocity.y > 0f) {
-                        continue;
-                    }
-                }
-
-                if (hitAngle < 90f && velocity.y <= 0f) {
-                    isGrounded = true;
-                    velocity.y = 0f;
-                }
-            }
-        }
-
-        //if (hasCollision) {
-        //    overlapFrames++;
-        //    if (overlapFrames > 1) {
-        //        Debug.Log("OverlapFrames " + overlapFrames);
-        //    }
-        //} else {
-        //    overlapFrames = 0;
-        //}
-    }
-
-    public void UpdateMovement(float deltaTime) {
-        UpdatePhysics_Jumping(deltaTime);
-        UpdatePhysics_Movement(deltaTime);
-        UpdatePhysics_Collision(deltaTime);
-        transform.position += (Vector3)velocity * deltaTime;
     }
 
     public Character2DMovementState ToState() {

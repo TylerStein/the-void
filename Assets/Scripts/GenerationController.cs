@@ -28,6 +28,9 @@ public class GenerationController : MonoBehaviour
     public PlayerController player;
     public GameObject platformPrefab;
 
+    public float bridgePartColliderYOffset = 0.4f;
+    public float bridgePartColliderXOffset = 0.5f;
+
     public int levelLength = 64;
 
     public int minPlatformLength = 1;
@@ -68,17 +71,13 @@ public class GenerationController : MonoBehaviour
             xEnd = Random.Range(minPlatformLength, maxPlatformLength),
         };
 
-        for (int i = 0; i < startPlatform.xEnd; i++) {
-            generatedPlatforms[i, startPlatform.yPosition] = true;
-            GameObject spawnedObject = Instantiate(platformPrefab);
-            spawnedObject.transform.position = new Vector3(i, startPlatform.yPosition, 0f);
-            spawnedObjects.Add(spawnedObject);
-        }
-
         player.transform.position = new Vector3(startPlatform.xStart, startPlatform.yPosition + 1.5f, 0f);
 
         Platform lastPlatform = startPlatform;
         platforms.Add(lastPlatform);
+
+        GameObject o = SpawnPlatformObject(startPlatform);
+        spawnedObjects.Add(o);
 
         int levelPlatformMax = levelMaxY - minVerticalPlatformDistance;
         int levelPlatformMin = levelMinY + minVerticalPlatformDistance;
@@ -109,7 +108,7 @@ public class GenerationController : MonoBehaviour
                 yPosition = platformY,
             };
 
-            GameObject o = SpawnPlatformObject(newPlatform);
+            o = SpawnPlatformObject(newPlatform);
             spawnedObjects.Add(o);
 
             lastPlatform = newPlatform;
@@ -127,6 +126,13 @@ public class GenerationController : MonoBehaviour
             GameObject o = Instantiate(platformPrefab, worldPos, Quaternion.identity);
             o.transform.parent = root.transform;
         }
+
+        EdgeCollider2D collider = root.AddComponent<EdgeCollider2D>();
+        List<Vector2> colliderPoints = new List<Vector2>() {
+            new Vector2(platform.xStart - bridgePartColliderXOffset, platform.yPosition + bridgePartColliderYOffset) - (Vector2)root.transform.position,
+            new Vector2(platform.xEnd - bridgePartColliderXOffset, platform.yPosition + bridgePartColliderYOffset) - (Vector2)root.transform.position
+        };
+        collider.points = colliderPoints.ToArray();
 
         return root;
     }

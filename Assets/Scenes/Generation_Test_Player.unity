@@ -1209,6 +1209,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd85eb49ae5c1fa4caf5b9136d648d18, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  targetFrameRate: 144
+  enableFrameLimit: 0
+  applySettings: 0
+  defaultVSync: 0
+  defaultFrameRate: 0
 --- !u!4 &1826253015
 Transform:
   m_ObjectHideFlags: 0
@@ -1431,8 +1436,10 @@ MonoBehaviour:
   player: {fileID: 2064930878}
   platformPrefab: {fileID: 165930000127910926, guid: b05050d8f333ecd4e93b24c75f2e88c2,
     type: 3}
+  bridgePartColliderYOffset: 0.5
+  bridgePartColliderXOffset: 0.5
   levelLength: 64
-  minPlatformLength: 6
+  minPlatformLength: 1
   maxPlatformLength: 12
   minPlatformDistanceX: 1
   maxPlatformDistanceX: 2
@@ -1448,6 +1455,36 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 7831047773583619864, guid: 3bd6edc50a347c948a41931b44ea7cbb,
+        type: 3}
+      propertyPath: m_ActionEvents.Array.data[6].m_PersistentCalls.m_Calls.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7831047773583619864, guid: 3bd6edc50a347c948a41931b44ea7cbb,
+        type: 3}
+      propertyPath: m_ActionEvents.Array.data[6].m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7831047773583619864, guid: 3bd6edc50a347c948a41931b44ea7cbb,
+        type: 3}
+      propertyPath: m_ActionEvents.Array.data[6].m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 7831047773583619864, guid: 3bd6edc50a347c948a41931b44ea7cbb,
+        type: 3}
+      propertyPath: m_ActionEvents.Array.data[6].m_PersistentCalls.m_Calls.Array.data[0].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7831047773583619864, guid: 3bd6edc50a347c948a41931b44ea7cbb,
+        type: 3}
+      propertyPath: m_ActionEvents.Array.data[6].m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: OnPoint
+      objectReference: {fileID: 0}
+    - target: {fileID: 7831047773583619864, guid: 3bd6edc50a347c948a41931b44ea7cbb,
+        type: 3}
+      propertyPath: m_ActionEvents.Array.data[6].m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
     - target: {fileID: 7831047775003359282, guid: 3bd6edc50a347c948a41931b44ea7cbb,
         type: 3}
       propertyPath: m_Name
@@ -1476,6 +1513,11 @@ PrefabInstance:
     - target: {fileID: 7831047775003359293, guid: 3bd6edc50a347c948a41931b44ea7cbb,
         type: 3}
       propertyPath: isGrounded
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7831047775003359293, guid: 3bd6edc50a347c948a41931b44ea7cbb,
+        type: 3}
+      propertyPath: debugMovement
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7831047775003359293, guid: 3bd6edc50a347c948a41931b44ea7cbb,

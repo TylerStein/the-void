@@ -17,6 +17,10 @@ MonoBehaviour:
   groundReverseForce: 400
   groundBrakeForce: 250
   groundMaxVelocity: 10
+  airMoveForce: 24
+  airReverseForce: 400
+  airBrakeForce: 250
+  airMaxVelocity: 12
   gravity: {x: 0, y: -150}
   gravityMinVelocity: -50
   boostJumpMaxVelocity: 32

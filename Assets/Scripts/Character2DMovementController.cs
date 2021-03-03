@@ -157,7 +157,6 @@ public class Character2DMovementController : MonoBehaviour
         if (isGrounded) {
             if (jumpInput && !lastJumpInput) {
                 isJumping = true;
-                lastJumpInput = true;
                 maxJumpVelocity = movementSettings.boostJumpMaxVelocity;
                 velocity.y = movementSettings.jumpForce;
             }
@@ -165,23 +164,30 @@ public class Character2DMovementController : MonoBehaviour
 
         if (!jumpInput) {
             lastJumpInput = false;
+        } else {
+            lastJumpInput = true;
         }
 
         // Horizontal movement
+        float brakeForce = isGrounded ? movementSettings.groundBrakeForce : movementSettings.airBrakeForce;
         if (moveInput != 0) {
-            float targetMove = movementSettings.groundMaxVelocity * moveInput;
+            float maxVelocity = isGrounded ? movementSettings.groundMaxVelocity : movementSettings.airMaxVelocity;
+            float reverseForce = isGrounded ? movementSettings.groundReverseForce : movementSettings.airReverseForce;
+
+            float targetMove = maxVelocity * moveInput;
             isReversing = Mathf.Sign(moveInput) != Mathf.Sign(velocity.x);
-            float moveSpeed = isReversing ? movementSettings.groundReverseForce : movementSettings.groundMoveForce;
+            float moveSpeed = isReversing ? reverseForce : brakeForce;
 
             velocity.x = Mathf.MoveTowards(velocity.x, targetMove, moveSpeed * deltaTime);
         } else {
-            velocity.x = Mathf.MoveTowards(velocity.x, 0f, movementSettings.groundBrakeForce * deltaTime);
+            velocity.x = Mathf.MoveTowards(velocity.x, 0f, brakeForce * deltaTime);
             isReversing = false;
         }
     }
     
     private void UpdatePhysics_ClampVelocity(float deltaTime) {
-        velocity.x = Mathf.Clamp(velocity.x, -movementSettings.groundMaxVelocity, movementSettings.groundMaxVelocity);
+        float maxVelocity = isGrounded ? movementSettings.groundMaxVelocity : movementSettings.airMaxVelocity;
+        velocity.x = Mathf.Clamp(velocity.x, -maxVelocity, maxVelocity);
 
         if (!isJumping || !jumpInput) {
             maxJumpVelocity = Mathf.MoveTowards(maxJumpVelocity, movementSettings.jumpMaxVelocity, deltaTime * movementSettings.jumpReturnSpeed);
@@ -224,31 +230,6 @@ public class Character2DMovementController : MonoBehaviour
             Debug.DrawLine(transform.position, transform.position + move, Color.yellow, debugMovementDuration);
         }
         transform.position += move;
-    }
-
-    private void UpdatePhysics_Jumping(float deltaTime) {
-        velocity += movementSettings.gravity * deltaTime;
-        if (velocity.y < movementSettings.gravityMinVelocity) {
-            velocity.y = movementSettings.gravityMinVelocity;
-        }
-
-        if (isGrounded) {
-            // Jump input
-            if (jumpInput && !isJumping) {
-                isJumping = true;
-                velocity.y = movementSettings.jumpForce;
-            } else {
-                isJumping = false;
-            }
-
-        }
-
-        // Jump max upwards velocity
-        if (isJumping) {
-            velocity.y = Mathf.Min(velocity.y, movementSettings.boostJumpMaxVelocity);
-        } else {
-            velocity.y = Mathf.Min(velocity.y, movementSettings.jumpMaxVelocity);
-        }
     }
 
     public Character2DMovementState ToState() {

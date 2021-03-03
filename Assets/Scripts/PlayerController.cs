@@ -29,4 +29,12 @@ public class PlayerController : MonoBehaviour
             movement.EndJump();
         }
     }
+
+    public void OnDash(InputAction.CallbackContext value) {
+        if (value.started) {
+            movement.BeginDash();
+        } else if (value.canceled) {
+            movement.EndDash();
+        }
+    }
 }

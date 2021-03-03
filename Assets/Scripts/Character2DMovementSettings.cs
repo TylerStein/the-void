@@ -28,4 +28,5 @@ public class Character2DMovementSettings : ScriptableObject
     public float dashMaxXVelocity = 50f;
     public float dashReturnSpeed = 50f;
     public float dashXForce = 50f;
+    public float dashYSet = 10f;
 }

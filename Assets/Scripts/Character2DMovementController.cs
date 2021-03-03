@@ -35,9 +35,13 @@ public class Character2DMovementController : MonoBehaviour
 
     [SerializeField] public float moveInput = 0f;
     [SerializeField] public bool jumpInput = false;
+    [SerializeField] public bool dashInput = false;
+    [SerializeField] public bool lastDashInput = false;
+    [SerializeField] public bool isDashing = false;
     [SerializeField] public bool lastJumpInput = false;
     [SerializeField] public float maxJumpVelocity = 0f;
 
+    [SerializeField] public float lastDashDir = 0f;
     [SerializeField] public bool isReversing = false;
     [SerializeField] public ContactFilter2D colliderContactFilter;
     [SerializeField] public Collider2D[] overlapColliders = new Collider2D[3];
@@ -100,6 +104,15 @@ public class Character2DMovementController : MonoBehaviour
     public void EndJump() {
         jumpInput = false;
         lastJumpInput = false;
+    }
+
+    public void BeginDash() {
+        dashInput = true;
+    }
+
+    public void EndDash() {
+        dashInput = false;
+        lastDashInput = false;
     }
 
     public void Move(float horizontal) {
@@ -173,12 +186,28 @@ public class Character2DMovementController : MonoBehaviour
         if (moveInput != 0) {
             float maxVelocity = isGrounded ? movementSettings.groundMaxVelocity : movementSettings.airMaxVelocity;
             float reverseForce = isGrounded ? movementSettings.groundReverseForce : movementSettings.airReverseForce;
-
             float targetMove = maxVelocity * moveInput;
             isReversing = Mathf.Sign(moveInput) != Mathf.Sign(velocity.x);
-            float moveSpeed = isReversing ? reverseForce : brakeForce;
 
-            velocity.x = Mathf.MoveTowards(velocity.x, targetMove, moveSpeed * deltaTime);
+            if (isDashing) {
+                velocity.x = Mathf.MoveTowards(velocity.x, 0f, movementSettings.dashReturnSpeed * Time.deltaTime);
+                if (Mathf.Abs(velocity.x) <= movementSettings.airMaxVelocity) {
+                    isDashing = false;
+                    lastDashInput = false;
+                    dashInput = false;
+                }
+            } else {
+                if (dashInput && !lastDashInput && !isDashing) {
+                    isDashing = true;
+                    lastDashInput = true;
+                    lastDashDir = Mathf.Sign(moveInput);
+                    velocity.y = movementSettings.dashYSet;
+                    velocity.x = movementSettings.dashXForce * lastDashDir;
+                } else {
+                    float moveSpeed = isReversing ? reverseForce : brakeForce;
+                    velocity.x = Mathf.MoveTowards(velocity.x, targetMove, moveSpeed * deltaTime);
+                }
+            }
         } else {
             velocity.x = Mathf.MoveTowards(velocity.x, 0f, brakeForce * deltaTime);
             isReversing = false;
@@ -187,6 +216,8 @@ public class Character2DMovementController : MonoBehaviour
     
     private void UpdatePhysics_ClampVelocity(float deltaTime) {
         float maxVelocity = isGrounded ? movementSettings.groundMaxVelocity : movementSettings.airMaxVelocity;
+        if (isDashing) maxVelocity = movementSettings.dashMaxXVelocity;
+
         velocity.x = Mathf.Clamp(velocity.x, -maxVelocity, maxVelocity);
 
         if (!isJumping || !jumpInput) {

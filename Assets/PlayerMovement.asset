@@ -27,3 +27,7 @@ MonoBehaviour:
   jumpMaxVelocity: 5
   jumpReturnSpeed: 1800
   minStaticGroundDistance: 0.001
+  dashMaxXVelocity: 120
+  dashReturnSpeed: 1200
+  dashXForce: 120
+  dashYSet: 50

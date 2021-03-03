@@ -1457,7 +1457,27 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 7831047773583619864, guid: 3bd6edc50a347c948a41931b44ea7cbb,
         type: 3}
+      propertyPath: m_ActionEvents.Array.size
+      value: 14
+      objectReference: {fileID: 0}
+    - target: {fileID: 7831047773583619864, guid: 3bd6edc50a347c948a41931b44ea7cbb,
+        type: 3}
+      propertyPath: m_ActionEvents.Array.data[13].m_ActionId
+      value: 37c0fa77-d2f7-4b2c-bea2-47f92d341d6b
+      objectReference: {fileID: 0}
+    - target: {fileID: 7831047773583619864, guid: 3bd6edc50a347c948a41931b44ea7cbb,
+        type: 3}
+      propertyPath: m_ActionEvents.Array.data[13].m_ActionName
+      value: Player/Dash[/XInputControllerWindows/buttonWest,/Keyboard/shift]
+      objectReference: {fileID: 0}
+    - target: {fileID: 7831047773583619864, guid: 3bd6edc50a347c948a41931b44ea7cbb,
+        type: 3}
       propertyPath: m_ActionEvents.Array.data[6].m_PersistentCalls.m_Calls.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7831047773583619864, guid: 3bd6edc50a347c948a41931b44ea7cbb,
+        type: 3}
+      propertyPath: m_ActionEvents.Array.data[13].m_PersistentCalls.m_Calls.Array.size
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7831047773583619864, guid: 3bd6edc50a347c948a41931b44ea7cbb,
@@ -1467,12 +1487,27 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7831047773583619864, guid: 3bd6edc50a347c948a41931b44ea7cbb,
         type: 3}
+      propertyPath: m_ActionEvents.Array.data[13].m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7831047773583619864, guid: 3bd6edc50a347c948a41931b44ea7cbb,
+        type: 3}
       propertyPath: m_ActionEvents.Array.data[6].m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 7831047773583619864, guid: 3bd6edc50a347c948a41931b44ea7cbb,
         type: 3}
+      propertyPath: m_ActionEvents.Array.data[13].m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 2064930878}
+    - target: {fileID: 7831047773583619864, guid: 3bd6edc50a347c948a41931b44ea7cbb,
+        type: 3}
       propertyPath: m_ActionEvents.Array.data[6].m_PersistentCalls.m_Calls.Array.data[0].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7831047773583619864, guid: 3bd6edc50a347c948a41931b44ea7cbb,
+        type: 3}
+      propertyPath: m_ActionEvents.Array.data[13].m_PersistentCalls.m_Calls.Array.data[0].m_CallState
       value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 7831047773583619864, guid: 3bd6edc50a347c948a41931b44ea7cbb,
@@ -1482,7 +1517,17 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7831047773583619864, guid: 3bd6edc50a347c948a41931b44ea7cbb,
         type: 3}
+      propertyPath: m_ActionEvents.Array.data[13].m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: OnDash
+      objectReference: {fileID: 0}
+    - target: {fileID: 7831047773583619864, guid: 3bd6edc50a347c948a41931b44ea7cbb,
+        type: 3}
       propertyPath: m_ActionEvents.Array.data[6].m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
+    - target: {fileID: 7831047773583619864, guid: 3bd6edc50a347c948a41931b44ea7cbb,
+        type: 3}
+      propertyPath: m_ActionEvents.Array.data[13].m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
       value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
     - target: {fileID: 7831047775003359282, guid: 3bd6edc50a347c948a41931b44ea7cbb,

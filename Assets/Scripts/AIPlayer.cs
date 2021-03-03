@@ -42,7 +42,7 @@ public class AIPlayer : MonoBehaviour
             ProjectMovement_v1(out doMove, out doJump);
 
             if (doMove) {
-                movement.Move(1f);
+                movement.Move(Vector2.right);
             }
 
             if (canJump && doJump) {
@@ -55,8 +55,8 @@ public class AIPlayer : MonoBehaviour
         }
 
         // Animation stuff
-        if (movement.MoveInput != 0) {
-            spriteRenderer.flipX = movement.MoveInput < 0f;
+        if (movement.MoveInputX != 0) {
+            spriteRenderer.flipX = movement.MoveInputX < 0f;
             playerAnimator.SetBool("moving", true);
         } else {
             playerAnimator.SetBool("moving", false);
@@ -87,7 +87,7 @@ public class AIPlayer : MonoBehaviour
                         break;
                     }
 
-                    movement.Move(1f);
+                    movement.Move(Vector2.right);
                     movement.UpdateMovement(projectionTimestep);
 
                     Debug.DrawLine(lastJumpPosition, movement.transform.position, Color.yellow, Time.deltaTime);
@@ -105,7 +105,7 @@ public class AIPlayer : MonoBehaviour
                 }
             }
 
-            movement.Move(1f);
+            movement.Move(Vector2.right);
             movement.UpdateMovement(projectionTimestep);
 
             Debug.DrawLine(lastPosition, movement.transform.position, Color.white, Time.deltaTime);
@@ -155,9 +155,9 @@ public class AIPlayer : MonoBehaviour
     }
 
     public void Move(float value) {
-        movement.MoveInput = value;
-        if (movement.MoveInput != 0) {
-            spriteRenderer.flipX = movement.MoveInput < 0f;
+        movement.MoveInputX = value;
+        if (movement.MoveInputX != 0) {
+            spriteRenderer.flipX = movement.MoveInputX < 0f;
         }
     }
 

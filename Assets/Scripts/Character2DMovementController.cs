@@ -1,8 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.Interactions;
+﻿using UnityEngine;
 using UnityEngine.Events;
 
 [System.Serializable]
@@ -12,7 +8,7 @@ public struct Character2DMovementState
     [SerializeField] public Vector2 velocity;
     [SerializeField] public bool isGrounded;
     [SerializeField] public Collider2D groundContact;
-    [SerializeField] public float moveInput;
+    [SerializeField] public Vector2 moveInput;
     [SerializeField] public bool jumpInput;
     [SerializeField] public bool lastJumpInput;
     [SerializeField] public bool isReversing;
@@ -33,11 +29,15 @@ public class Character2DMovementController : MonoBehaviour
     [SerializeField] public bool isJumping = false;
     [SerializeField] public Collider2D groundContact = null;
 
-    [SerializeField] public float moveInput = 0f;
+    [SerializeField] public Vector2 moveInput = Vector2.zero;
     [SerializeField] public bool jumpInput = false;
+
     [SerializeField] public bool dashInput = false;
     [SerializeField] public bool lastDashInput = false;
-    [SerializeField] public bool isDashing = false;
+
+    [SerializeField] public bool isGroundDashing = false;
+    [SerializeField] public bool isAirDashing = false;
+
     [SerializeField] public bool lastJumpInput = false;
     [SerializeField] public float maxJumpVelocity = 0f;
 
@@ -68,15 +68,17 @@ public class Character2DMovementController : MonoBehaviour
      * Rule: The player can hold down the jump button to keep an increase cap on their airborne velocity
      *       Releasing the jump button eases the max velocity down to the regular cap
      *       
-     * Mechanic: Air Dash
-     * Rule: The player can tap the dash button to get a brief increase of airborne velocity if not currently grounded
-     *       The velocity cap decreases back to normal to complete the dash, or resets once grounded
-     * ++++: When dashing into a ledge, above a certain height the player will "pop" upward to prevent collision
-     * 
      * Mechanic: Ground Dash
-     * Rule: The player can hold the dash button to get an increase of ground velocity
-     *       Ramps up in a short peridod, heightened velocity stays with jump until landing (or the dash continues)
-     *       Slowing down takes longer than normal while dashing for a challenge
+     *  Activate: Dash Button (Gamepad East / Keyboard Shift)
+     *  Requires: Not already dashing, moving in a direction, on the ground
+     *  Affords:  The player's target x velocity is increased
+     *  Ends:     The player releases dash or leaves the ground
+     * 
+     * Mechanic: Air Dash
+     *  Activate: Dash button (Gamepad East / Keyboard Shift)
+     *  Requires: Not already dashing, moving in a direction, in the air
+     *  Affords:  The player's velocity is boosted in the aimed direction
+     *  Ends:     The player lands
      */
 
     /**
@@ -93,7 +95,10 @@ public class Character2DMovementController : MonoBehaviour
     * 
     */ 
 
-    public float MoveInput { get => moveInput; set => moveInput = value; }
+    public Vector2 MoveInput { get => moveInput; set => moveInput = value; }
+    public float MoveInputX { get => moveInput.x; set => moveInput.x = value; }
+    public float MoveInputY { get => moveInput.y; set => moveInput.y = value; }
+
     public bool JumpInput { get => jumpInput; set => jumpInput = value; }
 
     public void BeginJump() {
@@ -115,8 +120,8 @@ public class Character2DMovementController : MonoBehaviour
         lastDashInput = false;
     }
 
-    public void Move(float horizontal) {
-        moveInput = horizontal;
+    public void Move(Vector2 input) {
+        moveInput = input;
     }
 
     public void TeleportTo(Vector3 position) {
@@ -160,7 +165,7 @@ public class Character2DMovementController : MonoBehaviour
 
     public void UpdateMovement(float deltaTime) {
         UpdatePhysics_Forces(deltaTime);
-        UpdatePhysics_ClampVelocity(deltaTime);
+      //  UpdatePhysics_ClampVelocity(deltaTime);
         UpdatePhysics_Collision(deltaTime);
     }
 
@@ -181,33 +186,25 @@ public class Character2DMovementController : MonoBehaviour
             lastJumpInput = true;
         }
 
+        if (!isAirDashing && !lastDashInput && dashInput && !isGrounded) {
+            // Air Dash
+            isAirDashing = true;
+            lastDashInput = true;
+
+            velocity = moveInput * movementSettings.airDashForce;
+            return;
+        }
+
         // Horizontal movement
         float brakeForce = isGrounded ? movementSettings.groundBrakeForce : movementSettings.airBrakeForce;
-        if (moveInput != 0) {
+        if (moveInput.x != 0) {
             float maxVelocity = isGrounded ? movementSettings.groundMaxVelocity : movementSettings.airMaxVelocity;
             float reverseForce = isGrounded ? movementSettings.groundReverseForce : movementSettings.airReverseForce;
-            float targetMove = maxVelocity * moveInput;
-            isReversing = Mathf.Sign(moveInput) != Mathf.Sign(velocity.x);
+            float targetMove = maxVelocity * moveInput.x;
+            isReversing = Mathf.Sign(moveInput.x) != Mathf.Sign(velocity.x);
 
-            if (isDashing) {
-                velocity.x = Mathf.MoveTowards(velocity.x, 0f, movementSettings.dashReturnSpeed * Time.deltaTime);
-                if (Mathf.Abs(velocity.x) <= movementSettings.airMaxVelocity) {
-                    isDashing = false;
-                    lastDashInput = false;
-                    dashInput = false;
-                }
-            } else {
-                if (dashInput && !lastDashInput && !isDashing) {
-                    isDashing = true;
-                    lastDashInput = true;
-                    lastDashDir = Mathf.Sign(moveInput);
-                    velocity.y = movementSettings.dashYSet;
-                    velocity.x = movementSettings.dashXForce * lastDashDir;
-                } else {
-                    float moveSpeed = isReversing ? reverseForce : brakeForce;
-                    velocity.x = Mathf.MoveTowards(velocity.x, targetMove, moveSpeed * deltaTime);
-                }
-            }
+            float moveSpeed = isReversing ? reverseForce : brakeForce;
+            velocity.x = Mathf.MoveTowards(velocity.x, targetMove, moveSpeed * deltaTime);
         } else {
             velocity.x = Mathf.MoveTowards(velocity.x, 0f, brakeForce * deltaTime);
             isReversing = false;
@@ -216,9 +213,18 @@ public class Character2DMovementController : MonoBehaviour
     
     private void UpdatePhysics_ClampVelocity(float deltaTime) {
         float maxVelocity = isGrounded ? movementSettings.groundMaxVelocity : movementSettings.airMaxVelocity;
-        if (isDashing) maxVelocity = movementSettings.dashMaxXVelocity;
 
-        velocity.x = Mathf.Clamp(velocity.x, -maxVelocity, maxVelocity);
+        if (isAirDashing) {
+
+        } else if (isGroundDashing) {
+
+        } else if (isGrounded) {
+            // Clamp ground move
+            velocity.x = Mathf.Clamp(velocity.x, -maxVelocity, maxVelocity);
+        } else {
+            // Clamp normal air move
+            velocity.x = Mathf.Clamp(velocity.x, -movementSettings.airMaxVelocity, movementSettings.airMaxVelocity);
+        }
 
         if (!isJumping || !jumpInput) {
             maxJumpVelocity = Mathf.MoveTowards(maxJumpVelocity, movementSettings.jumpMaxVelocity, deltaTime * movementSettings.jumpReturnSpeed);
@@ -251,6 +257,7 @@ public class Character2DMovementController : MonoBehaviour
                 if (velocity.y <= 0f) {
                     isGrounded = true;
                     isJumping = false;
+                    isAirDashing = false;
                     velocity.y = 0f;
                     move.y = 0f;
                 }

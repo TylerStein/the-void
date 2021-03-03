@@ -25,8 +25,11 @@ public class Character2DMovementSettings : ScriptableObject
 
     public float minStaticGroundDistance = 0.001f;
 
-    public float dashMaxXVelocity = 50f;
-    public float dashReturnSpeed = 50f;
-    public float dashXForce = 50f;
-    public float dashYSet = 10f;
+    public float airDashForce = 15f;
+    public float airDashMaxVelocity = 20f;
+    public float airDashReturnSpeed = 50f;
+
+    public float groundDashForce = 15f;
+    public float groundDashMaxVelocity = 20f;
+    public float groundDashReturnSpeed = 50f;
 }

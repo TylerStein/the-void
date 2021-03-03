@@ -10,13 +10,13 @@ public class PlayerController : MonoBehaviour
     public Animator playerAnimator;
 
     private void Update() {
-        playerAnimator.SetBool("moving", movement.MoveInput != 0);
+        playerAnimator.SetBool("moving", movement.MoveInputX != 0);
     }
 
     public void OnMove(InputAction.CallbackContext value) {
-        movement.MoveInput = value.ReadValue<Vector2>().x;
-        if (movement.MoveInput != 0) {
-            spriteRenderer.flipX = movement.MoveInput < 0f;
+        movement.MoveInput = value.ReadValue<Vector2>();
+        if (movement.MoveInputX != 0) {
+            spriteRenderer.flipX = movement.MoveInputX < 0f;
         }
     }
 

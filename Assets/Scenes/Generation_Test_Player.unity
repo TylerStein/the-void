@@ -937,6 +937,70 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 11
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1098284304 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7831047775003359282, guid: 3bd6edc50a347c948a41931b44ea7cbb,
+    type: 3}
+  m_PrefabInstance: {fileID: 2064930877}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1098284305
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1098284304}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b2a89d75d875de40be0b3ba6f167fcf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sortOrder: 1
+  movementController: {fileID: 1098284307}
+  boostJumpMaxVelocity: 50
+  jumpMaxVelocity: 15
+  jumpReturnSpeed: 40
+  jumpForce: 50
+  jumpInput: 0
+  jumpInputDown: 0
+  isBoosting: 0
+  isJumping: 0
+--- !u!114 &1098284306
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1098284304}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3859cabb9aec82f42a608f614a38b01a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sortOrder: 2
+  movementController: {fileID: 1098284307}
+  dashDuration: 0.5
+  dashMaxVelocity: 75
+  dashForce: 75
+  moveInput: {x: 0, y: 0}
+  dashInput: 0
+  dashInputDown: 0
+  isDashing: 0
+  hasDashCharge: 1
+  currentMaxVelocity: {x: 0, y: 0}
+  dashTimer: 0
+--- !u!114 &1098284307 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7831047775003359293, guid: 3bd6edc50a347c948a41931b44ea7cbb,
+    type: 3}
+  m_PrefabInstance: {fileID: 2064930877}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1098284304}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2187bd1794c172348b8bc815a425e76a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1183703022
 GameObject:
   m_ObjectHideFlags: 0
@@ -1562,6 +1626,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7831047775003359293, guid: 3bd6edc50a347c948a41931b44ea7cbb,
         type: 3}
+      propertyPath: jumpAbility
+      value: 
+      objectReference: {fileID: 1098284305}
+    - target: {fileID: 7831047775003359293, guid: 3bd6edc50a347c948a41931b44ea7cbb,
+        type: 3}
       propertyPath: debugMovement
       value: 1
       objectReference: {fileID: 0}
@@ -1590,6 +1659,21 @@ PrefabInstance:
       propertyPath: colliderLayerMask.m_Bits
       value: 4294967295
       objectReference: {fileID: 0}
+    - target: {fileID: 7831047775003359293, guid: 3bd6edc50a347c948a41931b44ea7cbb,
+        type: 3}
+      propertyPath: movementAbilities.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7831047775003359293, guid: 3bd6edc50a347c948a41931b44ea7cbb,
+        type: 3}
+      propertyPath: movementAbilities.Array.data[0]
+      value: 
+      objectReference: {fileID: 1098284305}
+    - target: {fileID: 7831047775003359293, guid: 3bd6edc50a347c948a41931b44ea7cbb,
+        type: 3}
+      propertyPath: movementAbilities.Array.data[1]
+      value: 
+      objectReference: {fileID: 1098284306}
     - target: {fileID: 7831047775003359293, guid: 3bd6edc50a347c948a41931b44ea7cbb,
         type: 3}
       propertyPath: respawnEvent.m_PersistentCalls.m_Calls.Array.size
@@ -1688,7 +1772,7 @@ MonoBehaviour:
     type: 3}
   m_PrefabInstance: {fileID: 2064930877}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 1098284304}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c7a8fff0b080bdb40a4695637c5c9733, type: 3}

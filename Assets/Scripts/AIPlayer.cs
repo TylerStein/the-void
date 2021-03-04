@@ -42,14 +42,14 @@ public class AIPlayer : MonoBehaviour
             ProjectMovement_v1(out doMove, out doJump);
 
             if (doMove) {
-                movement.Move(Vector2.right);
+                //movement.Move(Vector2.right);
             }
 
             if (canJump && doJump) {
-                movement.BeginJump();
+                //movement.BeginJump();
                 playerAnimator.SetBool("jumping", true);
             } else {
-                movement.EndJump();
+                //movement.EndJump();
                 playerAnimator.SetBool("jumping", false);
             }
         }
@@ -80,14 +80,14 @@ public class AIPlayer : MonoBehaviour
                 Character2DMovementState jumpSave = movement.ToState();
                 for (int j = 0; j < projectionIterations; j++) {
                     if (j == 0) {
-                        movement.BeginJump();
+                        //movement.BeginJump();
                     } else if (movement.velocity.y <= 0f && movement.isGrounded) {
-                        movement.EndJump();
+                        //movement.EndJump();
                         projectJump = true;
                         break;
                     }
 
-                    movement.Move(Vector2.right);
+                    //movement.Move(Vector2.right);
                     movement.UpdateMovement(projectionTimestep);
 
                     Debug.DrawLine(lastJumpPosition, movement.transform.position, Color.yellow, Time.deltaTime);
@@ -101,11 +101,11 @@ public class AIPlayer : MonoBehaviour
                     doJump = true;
                     break;
                 } else {
-                    movement.BeginJump();
+                    //movement.BeginJump();
                 }
             }
 
-            movement.Move(Vector2.right);
+            //movement.Move(Vector2.right);
             movement.UpdateMovement(projectionTimestep);
 
             Debug.DrawLine(lastPosition, movement.transform.position, Color.white, Time.deltaTime);
@@ -129,12 +129,12 @@ public class AIPlayer : MonoBehaviour
                     safeJump = true;
                     break;
                 } else {
-                    movement.BeginJump();
+                    //movement.BeginJump();
                 }
             }
 
             if (!didJump) {
-                movement.BeginJump();
+                //movement.BeginJump();
             }
 
 
@@ -164,10 +164,10 @@ public class AIPlayer : MonoBehaviour
     public void Jump(bool started) {
         if (started) {
             playerAnimator.SetBool("jumping", true);
-            movement.BeginJump();
+            //movement.BeginJump();
         } else {
             playerAnimator.SetBool("jumping", false);
-            movement.EndJump();
+            //movement.EndJump();
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.Events;
 
 [System.Serializable]
@@ -9,8 +10,6 @@ public struct Character2DMovementState
     [SerializeField] public bool isGrounded;
     [SerializeField] public Collider2D groundContact;
     [SerializeField] public Vector2 moveInput;
-    [SerializeField] public bool jumpInput;
-    [SerializeField] public bool lastJumpInput;
     [SerializeField] public bool isReversing;
     [SerializeField] public ContactFilter2D colliderContactFilter;
     [SerializeField] public Collider2D[] overlapColliders;
@@ -26,20 +25,9 @@ public class Character2DMovementController : MonoBehaviour
     [SerializeField] public Vector2 velocity = Vector2.zero;
 
     [SerializeField] public bool isGrounded = false;
-    [SerializeField] public bool isJumping = false;
     [SerializeField] public Collider2D groundContact = null;
 
     [SerializeField] public Vector2 moveInput = Vector2.zero;
-    [SerializeField] public bool jumpInput = false;
-
-    [SerializeField] public bool dashInput = false;
-    [SerializeField] public bool lastDashInput = false;
-
-    [SerializeField] public bool isGroundDashing = false;
-    [SerializeField] public bool isAirDashing = false;
-
-    [SerializeField] public bool lastJumpInput = false;
-    [SerializeField] public float maxJumpVelocity = 0f;
 
     [SerializeField] public float lastDashDir = 0f;
     [SerializeField] public bool isReversing = false;
@@ -52,6 +40,10 @@ public class Character2DMovementController : MonoBehaviour
 
     [SerializeField] public bool debugMovement = false;
     [SerializeField] public float debugMovementDuration = 1.5f;
+
+    [SerializeField] public InputState inputState;
+
+    [SerializeField] public List<Character2DMovementAbility> movementAbilities = new List<Character2DMovementAbility>();
 
     private new Transform transform;
     private new BoxCollider2D collider;
@@ -93,35 +85,39 @@ public class Character2DMovementController : MonoBehaviour
     *       set isGrounded true
     *       set velocity y 0
     * 
-    */ 
+    */
+
+    /*
+    * Movement Steps
+    * - Update Input State
+    * - Pre-Movement
+    *       Do any pre-movement logic (none in core)
+    *
+    * - Apply Forces
+    *       Update the projected velocity by adding forces
+    * 
+    * - Restrict Forces
+    *       Update the projected velocity by applying restrictions
+    * 
+    * - Project for collisions
+    *       Cast based on projected velocity
+    *       React to collisions
+    * 
+    * - Apply final movement
+    * - Post-movement
+    *       
+    *
+    */
 
     public Vector2 MoveInput { get => moveInput; set => moveInput = value; }
     public float MoveInputX { get => moveInput.x; set => moveInput.x = value; }
     public float MoveInputY { get => moveInput.y; set => moveInput.y = value; }
 
-    public bool JumpInput { get => jumpInput; set => jumpInput = value; }
-
-    public void BeginJump() {
-        //
-        jumpInput = true;
-    }
-
-    public void EndJump() {
-        jumpInput = false;
-        lastJumpInput = false;
-    }
-
-    public void BeginDash() {
-        dashInput = true;
-    }
-
-    public void EndDash() {
-        dashInput = false;
-        lastDashInput = false;
-    }
-
-    public void Move(Vector2 input) {
-        moveInput = input;
+    public void SetInputState(InputState input) {
+        moveInput.x = input.moveInput.x;
+        foreach (var ability in movementAbilities) {
+            ability.SetInputState(input);
+        }
     }
 
     public void TeleportTo(Vector3 position) {
@@ -153,6 +149,11 @@ public class Character2DMovementController : MonoBehaviour
         colliderContactFilter = contactFilter;
     }
 
+    private void Start() {
+        // sort movement abilities by sort order
+        movementAbilities.Sort((a, b) => a.SortOrder - b.SortOrder);
+    }
+
     private void Update() {
         if (worldBounds.Contains(transform.position) == false && !disableRespawn) {
             respawnEvent.Invoke();
@@ -164,78 +165,90 @@ public class Character2DMovementController : MonoBehaviour
     }
 
     public void UpdateMovement(float deltaTime) {
-        UpdatePhysics_Forces(deltaTime);
-      //  UpdatePhysics_ClampVelocity(deltaTime);
-        UpdatePhysics_Collision(deltaTime);
+        UpdatePreMovement(deltaTime);
+        
+        Vector3 lastPos = transform.position;
+        Vector2 vel = velocity;
+        Vector3 pos = transform.position;
+        Vector2 targetVelocity = Vector2.zero;
+        Vector2 changeSpeed = Vector2.zero;
+        Vector2 minVelocity = Vector2.negativeInfinity;
+        Vector2 maxVelocity = Vector2.positiveInfinity;
+
+        UpdateTargetVelocities(deltaTime, ref targetVelocity, ref changeSpeed, ref minVelocity, ref maxVelocity);
+        UpdateVelocity(deltaTime, ref vel, targetVelocity, changeSpeed);
+        ClampVelocity(deltaTime, ref vel, ref minVelocity, ref maxVelocity);
+        UpdateCollision(deltaTime, ref vel, ref pos);
+
+        UpdateTransform(deltaTime, pos, vel);
+        UpdatePostMovement(deltaTime);
+
+        if (debugMovement) {
+            Debug.DrawLine(lastPos, transform.position, Color.yellow, debugMovementDuration);
+        }
     }
 
-    private void UpdatePhysics_Forces(float deltaTime) {
-        // Vertical movement
-        velocity += movementSettings.gravity * deltaTime;
-        if (isGrounded) {
-            if (jumpInput && !lastJumpInput) {
-                isJumping = true;
-                maxJumpVelocity = movementSettings.boostJumpMaxVelocity;
-                velocity.y = movementSettings.jumpForce;
-            }
+    private void UpdatePreMovement(float deltaTime) {
+        foreach (var ability in movementAbilities) {
+            ability.UpdatePreMovement(deltaTime);
         }
+    }
 
-        if (!jumpInput) {
-            lastJumpInput = false;
-        } else {
-            lastJumpInput = true;
-        }
+    private void UpdateTargetVelocities(float deltaTime, ref Vector2 targetVelocity, ref Vector2 changeSpeed, ref Vector2 minVelocity, ref Vector2 maxVelocity) {
+        // default gravity target
+        targetVelocity.y = movementSettings.gravityMinVelocity;
+        changeSpeed -= movementSettings.gravity * Time.deltaTime;
 
-        if (!isAirDashing && !lastDashInput && dashInput && !isGrounded) {
-            // Air Dash
-            isAirDashing = true;
-            lastDashInput = true;
+        // default min
+        minVelocity.y = movementSettings.gravityMinVelocity;
+        minVelocity.x = isGrounded ? -movementSettings.groundMaxVelocity : -movementSettings.airMaxVelocity;
 
-            velocity = moveInput * movementSettings.airDashForce;
-            return;
-        }
+        // default max
+        maxVelocity.y = Mathf.Infinity;
+        maxVelocity.x = isGrounded ? movementSettings.groundMaxVelocity : movementSettings.airMaxVelocity;
 
-        // Horizontal movement
+        // movement targets
         float brakeForce = isGrounded ? movementSettings.groundBrakeForce : movementSettings.airBrakeForce;
         if (moveInput.x != 0) {
-            float maxVelocity = isGrounded ? movementSettings.groundMaxVelocity : movementSettings.airMaxVelocity;
+            float maxTargetVelocity = isGrounded ? movementSettings.groundMaxVelocity : movementSettings.airMaxVelocity;
             float reverseForce = isGrounded ? movementSettings.groundReverseForce : movementSettings.airReverseForce;
-            float targetMove = maxVelocity * moveInput.x;
+            float targetMove = maxTargetVelocity * moveInput.x;
             isReversing = Mathf.Sign(moveInput.x) != Mathf.Sign(velocity.x);
 
             float moveSpeed = isReversing ? reverseForce : brakeForce;
-            velocity.x = Mathf.MoveTowards(velocity.x, targetMove, moveSpeed * deltaTime);
+            targetVelocity.x += targetMove;
+            changeSpeed.x += moveSpeed * Time.deltaTime;
         } else {
-            velocity.x = Mathf.MoveTowards(velocity.x, 0f, brakeForce * deltaTime);
+            changeSpeed.x = brakeForce * Time.deltaTime;
+            targetVelocity.x = 0f;
             isReversing = false;
         }
-    }
-    
-    private void UpdatePhysics_ClampVelocity(float deltaTime) {
-        float maxVelocity = isGrounded ? movementSettings.groundMaxVelocity : movementSettings.airMaxVelocity;
 
-        if (isAirDashing) {
 
-        } else if (isGroundDashing) {
-
-        } else if (isGrounded) {
-            // Clamp ground move
-            velocity.x = Mathf.Clamp(velocity.x, -maxVelocity, maxVelocity);
-        } else {
-            // Clamp normal air move
-            velocity.x = Mathf.Clamp(velocity.x, -movementSettings.airMaxVelocity, movementSettings.airMaxVelocity);
+        foreach (var ability in movementAbilities) {
+            ability.UpdateTargetVelocities(deltaTime, ref targetVelocity, ref changeSpeed, ref minVelocity, ref maxVelocity);
         }
-
-        if (!isJumping || !jumpInput) {
-            maxJumpVelocity = Mathf.MoveTowards(maxJumpVelocity, movementSettings.jumpMaxVelocity, deltaTime * movementSettings.jumpReturnSpeed);
-        }
-
-        velocity.y = Mathf.Clamp(velocity.y, movementSettings.gravityMinVelocity, maxJumpVelocity);
     }
 
-    private void UpdatePhysics_Collision(float deltaTime) {
+    private void UpdateVelocity(float deltaTime, ref Vector2 velocity, Vector2 targetVelocity, Vector2 changeSpeed) {
+        velocity.x = Mathf.MoveTowards(velocity.x, targetVelocity.x, changeSpeed.x);
+        velocity.y = Mathf.MoveTowards(velocity.y, targetVelocity.y, changeSpeed.y);
+
+        //foreach (var ability in movementAbilities) {
+        //    ability.UpdateVelocity(deltaTime, ref velocity, ref minVelocity, ref maxVelocity);
+        //}
+    }
+
+    private void ClampVelocity(float deltaTime, ref Vector2 velocity, ref Vector2 minVelocity, ref Vector2 maxVelocity) {
+        velocity.x = Mathf.Clamp(velocity.x, minVelocity.x, maxVelocity.x);
+        velocity.y = Mathf.Clamp(velocity.y, minVelocity.y, maxVelocity.y);
+    }
+
+    private void UpdateCollision(float deltaTime, ref Vector2 velocity, ref Vector3 position) {
         Vector3 move = velocity * Time.deltaTime;
         int hitCount = collider.Cast(move.normalized, colliderContactFilter, raycastHits, move.magnitude);
+
+        bool wasGrounded = isGrounded;
         isGrounded = false;
         for (int i = 0; i < hitCount; i++) {
             if (raycastHits[i].collider == collider) continue;
@@ -251,23 +264,36 @@ public class Character2DMovementController : MonoBehaviour
             }
 
             // Hit something solid
-            transform.position = raycastHits[i].centroid;
+            position = raycastHits[i].centroid;
             if (hitAngle < 90f) {
                 // Hit the ground, make sure we're not trying to jump
                 if (velocity.y <= 0f) {
                     isGrounded = true;
-                    isJumping = false;
-                    isAirDashing = false;
                     velocity.y = 0f;
-                    move.y = 0f;
                 }
             }
         }
 
-        if (debugMovement) {
-            Debug.DrawLine(transform.position, transform.position + move, Color.yellow, debugMovementDuration);
+        if (!isGrounded && wasGrounded) {
+            foreach (var ability in movementAbilities) {
+                ability.OnFalling(deltaTime, ref velocity, ref position);
+            }
+        } else if (isGrounded && !wasGrounded) {
+            foreach (var ability in movementAbilities) {
+                ability.OnGrounded(deltaTime, ref velocity, ref position);
+            }
         }
-        transform.position += move;
+    }
+
+    private void UpdateTransform(float deltaTime, Vector3 position, Vector2 velocity) {
+        transform.position = position + (Vector3)(velocity * deltaTime);
+        this.velocity = velocity;
+    }
+
+    private void UpdatePostMovement(float deltaTime) {
+        foreach (var ability in movementAbilities) {
+            ability.UpdatePostMovement(deltaTime);
+        }
     }
 
     public Character2DMovementState ToState() {
@@ -277,8 +303,6 @@ public class Character2DMovementController : MonoBehaviour
             isGrounded = isGrounded,
             groundContact = groundContact,
             moveInput = moveInput,
-            jumpInput = jumpInput,
-            lastJumpInput = lastJumpInput,
             isReversing = isReversing,
             colliderContactFilter = colliderContactFilter,
             overlapColliders = overlapColliders,
@@ -291,8 +315,6 @@ public class Character2DMovementController : MonoBehaviour
         isGrounded = state.isGrounded;
         groundContact = state.groundContact;
         moveInput = state.moveInput;
-        jumpInput = state.jumpInput;
-        lastJumpInput = state.lastJumpInput;
         isReversing = state.isReversing;
         colliderContactFilter = state.colliderContactFilter;
         overlapColliders = state.overlapColliders;

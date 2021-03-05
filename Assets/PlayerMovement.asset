@@ -12,24 +12,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 127ed506fa1a51745b6165193992ce9a, type: 3}
   m_Name: PlayerMovement
   m_EditorClassIdentifier: 
-  jumpForce: 50
-  groundMoveForce: 20
-  groundReverseForce: 400
-  groundBrakeForce: 250
-  groundMaxVelocity: 10
-  airMoveForce: 24
-  airReverseForce: 400
-  airBrakeForce: 250
-  airMaxVelocity: 12
   gravity: {x: 0, y: -150}
-  gravityMinVelocity: -50
-  boostJumpMaxVelocity: 32
-  jumpMaxVelocity: 5
-  jumpReturnSpeed: 1800
-  minStaticGroundDistance: 0.001
-  airDashForce: 50
-  airDashMaxVelocity: 20
-  airDashReturnSpeed: 50
-  groundDashForce: 15
-  groundDashMaxVelocity: 20
-  groundDashReturnSpeed: 20
+  minVelocityY: -50
+  groundMoveAccelerationX: 20
+  groundReverseAccelerationX: 400
+  groundStopDecelerationX: 250
+  groundMaxVelocityX: 10
+  airMoveAccelerationX: 24
+  airReverseAccelerationX: 400
+  airStopDecelerationX: 250
+  airMaxVelocityX: 12
+  jumpMaxVelocityY: 15
+  jumpBoostMaxVelocityY: 50
+  jumpAccelerationY: 50
+  jumpBoostDecayY: 40
+  airDashMaxVelocityXY: 50
+  airDashAccelerationXY: 50
+  airDashDecayXY: 150
+  groundDashMaxVelocityX: 16
+  groundDashAccelerationX: 20

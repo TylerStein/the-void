@@ -5,12 +5,10 @@ using UnityEngine;
 public class AirDashAbility : Character2DMovementAbility
 {
     public override int SortOrder { get => sortOrder; }
-    [SerializeField] public int sortOrder = 0;
-    [SerializeField] private Character2DMovementController movementController;
+    public override Character2DMovementController Controller { get => controller; set => controller = value; }
 
-    [SerializeField] public float dashDuration = 0.15f;
-    [SerializeField] public float dashMaxVelocity = 30f;
-    [SerializeField] public float dashForce = 50f;
+    [SerializeField] public int sortOrder = 0;
+    [SerializeField] private Character2DMovementController controller;
 
     [SerializeField] private Vector2 moveInput = Vector2.zero;
     [SerializeField] private bool dashInput = false;
@@ -19,7 +17,6 @@ public class AirDashAbility : Character2DMovementAbility
     [SerializeField] private bool hasDashCharge = true;
 
     [SerializeField] private Vector2 currentMaxVelocity = Vector2.zero;
-    [SerializeField] private float dashTimer = 0f;
 
     public override void SetInputState(InputState inputState) {
         moveInput = inputState.moveInput;
@@ -41,14 +38,13 @@ public class AirDashAbility : Character2DMovementAbility
     }
 
     public override void UpdateTargetVelocities(float deltaTime, ref Vector2 targetVelocity, ref Vector2 changeSpeed, ref Vector2 minVelocity, ref Vector2 maxVelocity) {
-        if (dashInputDown && movementController.isGrounded == false && isDashing == false && hasDashCharge) {
+        if (dashInputDown && controller.isGrounded == false && isDashing == false && hasDashCharge) {
             isDashing = true;
             hasDashCharge = false;
-            targetVelocity = moveInput.normalized * dashMaxVelocity;
-            changeSpeed.x = dashForce;
-            changeSpeed.y = dashForce;
-            dashTimer = 0f;
-            currentMaxVelocity = new Vector2(dashMaxVelocity, dashMaxVelocity);
+            currentMaxVelocity = new Vector2(controller.Settings.airDashMaxVelocityXY, controller.Settings.airDashMaxVelocityXY);
+            targetVelocity = moveInput.normalized * controller.Settings.airDashMaxVelocityXY;
+            changeSpeed.x = controller.Settings.airDashAccelerationXY;
+            changeSpeed.y = controller.Settings.airDashAccelerationXY;
         }
         
         if (isDashing) {
@@ -61,9 +57,8 @@ public class AirDashAbility : Character2DMovementAbility
 
     public override void UpdatePostMovement(float deltaTime) {
         if (isDashing) {
-            dashTimer += deltaTime;
-            if (dashTimer >= dashDuration) {
-                dashTimer = 0f;
+            currentMaxVelocity.x = Mathf.MoveTowards(currentMaxVelocity.x, controller.Settings.airMaxVelocityX, controller.Settings.airDashDecayXY * deltaTime);
+            if (Mathf.Abs(currentMaxVelocity.x) <= controller.Settings.airMaxVelocityX) {
                 isDashing = false;
             }
         }

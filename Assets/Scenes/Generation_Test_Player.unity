@@ -965,6 +965,8 @@ MonoBehaviour:
   jumpInputDown: 0
   isBoosting: 0
   isJumping: 0
+  moveInput: {x: 0, y: 0}
+  launchVelocityX: 0
 --- !u!114 &1098284306
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -979,9 +981,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   sortOrder: 2
   movementController: {fileID: 1098284307}
-  dashDuration: 0.5
-  dashMaxVelocity: 75
-  dashForce: 75
+  dashDuration: 0.25
+  dashMaxVelocity: 30
+  dashForce: 30
   moveInput: {x: 0, y: 0}
   dashInput: 0
   dashInputDown: 0
@@ -1001,6 +1003,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2187bd1794c172348b8bc815a425e76a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1098284308
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1098284304}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d3403ac691406fa4898973a95721bba7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sortOrder: 3
+  movementController: {fileID: 1098284307}
+  dashMaxVelocity: 30
+  dashForce: 30
+  moveInput: {x: 0, y: 0}
+  dashInput: 0
+  dashInputDown: 0
+  isDashing: 0
+  hasCharge: 1
+  dashDirection: 0
 --- !u!1 &1183703022
 GameObject:
   m_ObjectHideFlags: 0
@@ -1503,8 +1527,8 @@ MonoBehaviour:
   bridgePartColliderYOffset: 0.5
   bridgePartColliderXOffset: 0.5
   levelLength: 64
-  minPlatformLength: 1
-  maxPlatformLength: 12
+  minPlatformLength: 8
+  maxPlatformLength: 14
   minPlatformDistanceX: 1
   maxPlatformDistanceX: 2
   minVerticalPlatformDistance: 2
@@ -1662,7 +1686,7 @@ PrefabInstance:
     - target: {fileID: 7831047775003359293, guid: 3bd6edc50a347c948a41931b44ea7cbb,
         type: 3}
       propertyPath: movementAbilities.Array.size
-      value: 2
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 7831047775003359293, guid: 3bd6edc50a347c948a41931b44ea7cbb,
         type: 3}
@@ -1674,6 +1698,11 @@ PrefabInstance:
       propertyPath: movementAbilities.Array.data[1]
       value: 
       objectReference: {fileID: 1098284306}
+    - target: {fileID: 7831047775003359293, guid: 3bd6edc50a347c948a41931b44ea7cbb,
+        type: 3}
+      propertyPath: movementAbilities.Array.data[2]
+      value: 
+      objectReference: {fileID: 1098284308}
     - target: {fileID: 7831047775003359293, guid: 3bd6edc50a347c948a41931b44ea7cbb,
         type: 3}
       propertyPath: respawnEvent.m_PersistentCalls.m_Calls.Array.size

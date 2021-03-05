@@ -4,7 +4,8 @@ using UnityEngine;
 
 public abstract class Character2DMovementAbility : MonoBehaviour
 {
-    public virtual int SortOrder { get => 0; }
+    public abstract int SortOrder { get; }
+    public abstract Character2DMovementController Controller { get; set; }
 
     public virtual void SetInputState(InputState inputState) { }
     public virtual void UpdatePreMovement(float deltaTime) { }

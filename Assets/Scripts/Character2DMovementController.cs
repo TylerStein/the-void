@@ -18,7 +18,9 @@ public struct Character2DMovementState
 [RequireComponent(typeof(Collider2D))]
 public class Character2DMovementController : MonoBehaviour
 {
-    public Character2DMovementSettings movementSettings;
+    [SerializeField] private Character2DMovementSettings movementSettings;
+    public Character2DMovementSettings Settings { get => movementSettings; }
+
     public Bounds worldBounds = new Bounds();
     public Transform respawn;
 
@@ -147,10 +149,14 @@ public class Character2DMovementController : MonoBehaviour
         contactFilter.layerMask = Physics2D.GetLayerCollisionMask(gameObject.layer);
         contactFilter.useTriggers = false;
         colliderContactFilter = contactFilter;
+
+        foreach (var ability in movementAbilities) {
+            ability.Controller = this;
+        }
     }
 
     private void Start() {
-        // sort movement abilities by sort order
+        // sort movement abilities by sort order ???
         movementAbilities.Sort((a, b) => a.SortOrder - b.SortOrder);
     }
 
@@ -196,22 +202,22 @@ public class Character2DMovementController : MonoBehaviour
 
     private void UpdateTargetVelocities(float deltaTime, ref Vector2 targetVelocity, ref Vector2 changeSpeed, ref Vector2 minVelocity, ref Vector2 maxVelocity) {
         // default gravity target
-        targetVelocity.y = movementSettings.gravityMinVelocity;
+        targetVelocity.y = movementSettings.minVelocityY;
         changeSpeed -= movementSettings.gravity * Time.deltaTime;
 
         // default min
-        minVelocity.y = movementSettings.gravityMinVelocity;
-        minVelocity.x = isGrounded ? -movementSettings.groundMaxVelocity : -movementSettings.airMaxVelocity;
+        minVelocity.y = movementSettings.minVelocityY;
+        minVelocity.x = isGrounded ? -movementSettings.groundMaxVelocityX : -movementSettings.airMaxVelocityX;
 
         // default max
         maxVelocity.y = Mathf.Infinity;
-        maxVelocity.x = isGrounded ? movementSettings.groundMaxVelocity : movementSettings.airMaxVelocity;
+        maxVelocity.x = isGrounded ? movementSettings.groundMaxVelocityX : movementSettings.airMaxVelocityX;
 
         // movement targets
-        float brakeForce = isGrounded ? movementSettings.groundBrakeForce : movementSettings.airBrakeForce;
+        float brakeForce = isGrounded ? movementSettings.groundStopDecelerationX : movementSettings.airStopDecelerationX;
         if (moveInput.x != 0) {
-            float maxTargetVelocity = isGrounded ? movementSettings.groundMaxVelocity : movementSettings.airMaxVelocity;
-            float reverseForce = isGrounded ? movementSettings.groundReverseForce : movementSettings.airReverseForce;
+            float maxTargetVelocity = isGrounded ? movementSettings.groundMaxVelocityX : movementSettings.airMaxVelocityX;
+            float reverseForce = isGrounded ? movementSettings.groundReverseAccelerationX : movementSettings.airReverseAccelerationX;
             float targetMove = maxTargetVelocity * moveInput.x;
             isReversing = Mathf.Sign(moveInput.x) != Mathf.Sign(velocity.x);
 

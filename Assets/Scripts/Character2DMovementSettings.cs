@@ -1,30 +1,36 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 [CreateAssetMenu(fileName = "New Character2DMovementSettings", menuName = "2D Movement Settings", order = 1)]
 public class Character2DMovementSettings : ScriptableObject
 {
-    public float groundMoveForce = 10f;
-    public float groundReverseForce = 100f;
-    public float groundBrakeForce = 50f;
-    public float groundMaxVelocity = 20f;
+    [Header("Gravity")]
+    public Vector2 gravity = new Vector2(0f, -150);
+    public float minVelocityY = -50f;
 
-    public float airMoveForce = 12f;
-    public float airReverseForce = 100f;
-    public float airBrakeForce = 50f;
-    public float airMaxVelocity = 12f;
+    [Header("Ground Control")]
+    public float groundMoveAccelerationX = 20f;
+    public float groundReverseAccelerationX = 400f;
+    public float groundStopDecelerationX = 250f;
+    public float groundMaxVelocityX = 10f;
 
-    public Vector2 gravity = new Vector2(0f, -9.8f);
-    public float gravityMinVelocity = -30f;
+    [Header("Air Control")]
+    public float airMoveAccelerationX = 24f;
+    public float airReverseAccelerationX = 400f;
+    public float airStopDecelerationX = 250f;
+    public float airMaxVelocityX = 12f;
 
-    public float minStaticGroundDistance = 0.001f;
+    [Header("Ability: Jump")]
+    public float jumpMaxVelocityY = 15f;
+    public float jumpBoostMaxVelocityY = 50f;
+    public float jumpAccelerationY = 50f;
+    public float jumpBoostDecayY = 40f;
 
-    public float airDashForce = 15f;
-    public float airDashMaxVelocity = 20f;
-    public float airDashReturnSpeed = 50f;
+    [Header("Ability: Air Dash")]
+    public float airDashMaxVelocityXY = 30f;
+    public float airDashAccelerationXY = 30f;
+    public float airDashDecayXY = 15f;
 
-    public float groundDashForce = 15f;
-    public float groundDashMaxVelocity = 20f;
-    public float groundDashReturnSpeed = 50f;
+    [Header("Ability: Ground Dash")]
+    public float groundDashMaxVelocityX = 30f;
+    public float groundDashAccelerationX = 30f;
 }

@@ -39,16 +39,20 @@ public class GenerationController : MonoBehaviour
     public int minPlatformDistanceX = 1;
     public int maxPlatformDistanceX = 4;
 
+    public int maxPlatformDistanceY = 4;
     public int minVerticalPlatformDistance = 2;
+
     public int maxConcurrentPlatforms = 3;
 
     public int levelMinY = 0;
     public int levelMaxY = 24;
     public int LevelHeight { get => levelMaxY - levelMinY; }
 
-    public bool[,] generatedPlatforms = new bool[0, 0];
+    public int[] levelColumns = new int[0];
     public List<GameObject> spawnedObjects = new List<GameObject>();
-    public List<Platform> platforms = new List<Platform>();
+
+    public List<Platform> closedPlatforms = new List<Platform>();
+    public List<Platform> openPlatforms = new List<Platform>();
 
     // Start is called before the first frame update
     void Start()
@@ -64,6 +68,7 @@ public class GenerationController : MonoBehaviour
 
     public void Generate() {
         Initialize();
+
         int levelMid = Mathf.RoundToInt(LevelHeight / 2f);
         Platform startPlatform = new Platform() {
             yPosition = levelMid,
@@ -73,47 +78,62 @@ public class GenerationController : MonoBehaviour
 
         player.transform.position = new Vector3(startPlatform.xStart, startPlatform.yPosition + 1.5f, 0f);
 
-        Platform lastPlatform = startPlatform;
-        platforms.Add(lastPlatform);
+        GameObject startPlatformObject = SpawnPlatformObject(startPlatform);
+        spawnedObjects.Add(startPlatformObject);
+        openPlatforms.Add(startPlatform);
 
-        GameObject o = SpawnPlatformObject(startPlatform);
-        spawnedObjects.Add(o);
-
-        int levelPlatformMax = levelMaxY - minVerticalPlatformDistance;
-        int levelPlatformMin = levelMinY + minVerticalPlatformDistance;
-        int levelPlatformEndXCancel = levelLength - minPlatformDistanceX;
-
-        while (lastPlatform.xEnd < levelPlatformEndXCancel) {
-            int gap = Random.Range(minPlatformDistanceX, maxPlatformDistanceX);
-            int platformStartX = lastPlatform.xEnd + gap;
-            int platformEndX = Mathf.Min(levelLength, platformStartX + Random.Range(minPlatformLength, maxPlatformLength));
-            int platformY = lastPlatform.yPosition;
-
-            int platformBoundsMax = Mathf.Min(lastPlatform.yPosition + minVerticalPlatformDistance, levelPlatformMax);
-            int platformBoundsMin = Mathf.Max(lastPlatform.yPosition - minVerticalPlatformDistance, levelPlatformMin);
-            if (lastPlatform.yPosition >= (levelMaxY - minVerticalPlatformDistance)) {
-                // no up adds
-                platformY = Random.Range(platformBoundsMin, lastPlatform.yPosition);
-            } else if (lastPlatform.yPosition <= (levelMinY + minVerticalPlatformDistance)) {
-                // no down adds
-                platformY = Random.Range(platformBoundsMax, lastPlatform.yPosition);
-            } else {
-                // any adds
-                platformY = Random.Range(platformBoundsMin, platformBoundsMax);
+        while (openPlatforms.Count > 0) {
+            List<Platform> newPlatforms = new List<Platform>();
+            foreach (var platform in openPlatforms) {
+                int count = Mathf.RoundToInt(Random.Range(1f, maxConcurrentPlatforms));
+                for (int i = 0; i < count; i++) {
+                    Platform nextPlatform = AddNextPlatform(platform);
+                    if (nextPlatform != null) newPlatforms.Add(nextPlatform);
+                }
             }
 
-            Platform newPlatform = new Platform() {
-                xStart = platformStartX,
-                xEnd = platformEndX,
-                yPosition = platformY,
-            };
-
-            o = SpawnPlatformObject(newPlatform);
-            spawnedObjects.Add(o);
-
-            lastPlatform = newPlatform;
-            platforms.Add(lastPlatform);
+            closedPlatforms.AddRange(openPlatforms);
+            openPlatforms = newPlatforms;
         }
+        //while (lastPlatform.xEnd < levelPlatformEndXCancel) {
+
+        //}
+    }
+
+    public Platform AddNextPlatform(Platform lastPlatform) {
+        int levelPlatformMax = levelMaxY - minVerticalPlatformDistance;
+        int levelPlatformMin = levelMinY + minVerticalPlatformDistance;
+        int levelPlatformEndXCancel = levelLength - maxPlatformDistanceX;
+
+        // too far to create more platforms
+        if (lastPlatform.xEnd >= levelPlatformEndXCancel) return null;
+
+        int gap = Random.Range(minPlatformDistanceX, maxPlatformDistanceX);
+        int platformStartX = lastPlatform.xEnd + gap;
+
+        // check if too many platforms at this y to start
+        int countAtStart = levelColumns[platformStartX];
+        if (countAtStart > maxConcurrentPlatforms) return null;
+
+        int platformEndX = Mathf.Min(levelLength, platformStartX + Random.Range(minPlatformLength, maxPlatformLength));
+
+        // random offset up/down
+        int platformY = lastPlatform.yPosition + Random.Range(-maxPlatformDistanceY, maxPlatformDistanceY);
+
+        // prevent level edge adds
+        platformY = Mathf.Min(platformY, levelPlatformMax - minVerticalPlatformDistance);
+        platformY = Mathf.Max(platformY, levelPlatformMin + minVerticalPlatformDistance);
+
+        Platform newPlatform = new Platform() {
+            xStart = platformStartX,
+            xEnd = platformEndX,
+            yPosition = platformY,
+        };
+
+        GameObject newPlatformObject = SpawnPlatformObject(newPlatform);
+        spawnedObjects.Add(newPlatformObject);
+
+        return newPlatform;
     }
 
     public GameObject SpawnPlatformObject(Platform platform) {
@@ -123,6 +143,7 @@ public class GenerationController : MonoBehaviour
         int size = platform.xEnd - platform.xStart;
         for (int i = 0; i < size; i++) {
             Vector3 worldPos = new Vector3(platform.xStart + i, platform.yPosition, 0f);
+            levelColumns[platform.xStart + i]++;
             GameObject o = Instantiate(platformPrefab, worldPos, Quaternion.identity);
             o.transform.parent = root.transform;
         }
@@ -184,6 +205,6 @@ public class GenerationController : MonoBehaviour
             DestroyImmediate(spawnedObjects[i]);
         }
 
-        generatedPlatforms = new bool[levelLength, LevelHeight];
+        levelColumns = new int[levelLength];
     }
 }

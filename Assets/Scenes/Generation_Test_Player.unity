@@ -956,11 +956,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sortOrder: 1
-  movementController: {fileID: 1098284307}
-  boostJumpMaxVelocity: 50
-  jumpMaxVelocity: 15
-  jumpReturnSpeed: 40
-  jumpForce: 50
+  controller: {fileID: 0}
   jumpInput: 0
   jumpInputDown: 0
   isBoosting: 0
@@ -980,29 +976,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sortOrder: 2
-  movementController: {fileID: 1098284307}
-  dashDuration: 0.25
-  dashMaxVelocity: 30
-  dashForce: 30
+  controller: {fileID: 0}
   moveInput: {x: 0, y: 0}
   dashInput: 0
   dashInputDown: 0
   isDashing: 0
   hasDashCharge: 1
   currentMaxVelocity: {x: 0, y: 0}
-  dashTimer: 0
---- !u!114 &1098284307 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 7831047775003359293, guid: 3bd6edc50a347c948a41931b44ea7cbb,
-    type: 3}
-  m_PrefabInstance: {fileID: 2064930877}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1098284304}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2187bd1794c172348b8bc815a425e76a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &1098284308
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1016,9 +996,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sortOrder: 3
-  movementController: {fileID: 1098284307}
-  dashMaxVelocity: 30
-  dashForce: 30
+  controller: {fileID: 0}
   moveInput: {x: 0, y: 0}
   dashInput: 0
   dashInputDown: 0
@@ -1527,14 +1505,16 @@ MonoBehaviour:
   bridgePartColliderYOffset: 0.5
   bridgePartColliderXOffset: 0.5
   levelLength: 64
-  minPlatformLength: 8
-  maxPlatformLength: 14
+  minPlatformLength: 2
+  maxPlatformLength: 12
   minPlatformDistanceX: 1
-  maxPlatformDistanceX: 2
-  minVerticalPlatformDistance: 2
-  maxConcurrentPlatforms: 2
+  maxPlatformDistanceX: 4
+  maxPlatformDistanceY: 4
+  minVerticalPlatformDistance: 4
+  maxConcurrentPlatforms: 4
   levelMinY: 0
   levelMaxY: 24
+  levelColumns: 
   spawnedObjects: []
 --- !u!1001 &2064930877
 PrefabInstance:

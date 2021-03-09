@@ -44,11 +44,14 @@ TagManager:
   - name: Background
     uniqueID: 3546054487
     locked: 0
+  - name: World
+    uniqueID: 220637111
+    locked: 0
   - name: Default
     uniqueID: 0
     locked: 0
-  - name: World
-    uniqueID: 220637111
+  - name: Character
+    uniqueID: 1458019795
     locked: 0
   - name: Foreground
     uniqueID: 2197428095

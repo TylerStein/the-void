@@ -6,6 +6,7 @@ using UnityEngine;
 public class InputState
 {
     [SerializeField] public Vector2 moveInput;
+    [SerializeField] public Vector2 rawMoveInput;
     [SerializeField] public bool jumpIsDown;
     [SerializeField] public bool dashIsDown;
 }

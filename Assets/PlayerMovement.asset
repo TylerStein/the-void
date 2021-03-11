@@ -18,16 +18,16 @@ MonoBehaviour:
   groundReverseAccelerationX: 400
   groundStopDecelerationX: 250
   groundMaxVelocityX: 10
-  airMoveAccelerationX: 24
+  airMoveAccelerationX: 45
   airReverseAccelerationX: 400
   airStopDecelerationX: 250
-  airMaxVelocityX: 12
-  jumpMaxVelocityY: 15
-  jumpBoostMaxVelocityY: 50
-  jumpAccelerationY: 50
-  jumpBoostDecayY: 40
-  airDashMaxVelocityXY: 50
-  airDashAccelerationXY: 50
+  airMaxVelocityX: 14
+  jumpMaxVelocityY: 6
+  jumpBoostMaxVelocityY: 45
+  jumpAccelerationY: 38
+  jumpBoostDecayY: 20
+  airDashMaxVelocityXY: 35
+  airDashAccelerationXY: 40
   airDashDecayXY: 150
   groundDashMaxVelocityX: 16
   groundDashAccelerationX: 20

@@ -181,7 +181,7 @@ public class Character2DMovementController : MonoBehaviour
         Vector2 minVelocity = Vector2.negativeInfinity;
         Vector2 maxVelocity = Vector2.positiveInfinity;
 
-        UpdateTargetVelocities(deltaTime, ref targetVelocity, ref changeSpeed, ref minVelocity, ref maxVelocity);
+        UpdateTargetVelocities(deltaTime, ref vel, ref targetVelocity, ref changeSpeed, ref minVelocity, ref maxVelocity);
         UpdateVelocity(deltaTime, ref vel, targetVelocity, changeSpeed);
         ClampVelocity(deltaTime, ref vel, ref minVelocity, ref maxVelocity);
         UpdateCollision(deltaTime, ref vel, ref pos);
@@ -200,7 +200,7 @@ public class Character2DMovementController : MonoBehaviour
         }
     }
 
-    private void UpdateTargetVelocities(float deltaTime, ref Vector2 targetVelocity, ref Vector2 changeSpeed, ref Vector2 minVelocity, ref Vector2 maxVelocity) {
+    private void UpdateTargetVelocities(float deltaTime, ref Vector2 currentVelocity, ref Vector2 targetVelocity, ref Vector2 changeSpeed, ref Vector2 minVelocity, ref Vector2 maxVelocity) {
         // default gravity target
         targetVelocity.y = movementSettings.minVelocityY;
         changeSpeed -= movementSettings.gravity * Time.deltaTime;
@@ -232,7 +232,7 @@ public class Character2DMovementController : MonoBehaviour
 
 
         foreach (var ability in movementAbilities) {
-            ability.UpdateTargetVelocities(deltaTime, ref targetVelocity, ref changeSpeed, ref minVelocity, ref maxVelocity);
+            ability.UpdateTargetVelocities(deltaTime, ref currentVelocity, ref targetVelocity, ref changeSpeed, ref minVelocity, ref maxVelocity);
         }
     }
 

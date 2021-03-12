@@ -13,12 +13,15 @@ public enum EInputSnap
 
 public class PlayerController : MonoBehaviour
 {
+    public Animator squashStretchAnimator;
+    public SquashStretchController squashStretchController;
     public SpriteRenderer spriteRenderer;
     public Character2DMovementController movement;
     public Animator playerAnimator;
     public InputState lastInputState;
     public EInputSnap inputSnapMode;
 
+    public bool groundedLastFrame = true;
     public float inputAngle = 0f;
     public Vector2 adjustedInput = Vector2.zero;
 
@@ -28,6 +31,20 @@ public class PlayerController : MonoBehaviour
         if (movement.MoveInputX != 0) {
             spriteRenderer.flipX = movement.MoveInputX < 0f;
         }
+
+        if (groundedLastFrame != movement.isGrounded) {
+            if (movement.isGrounded) {
+                squashStretchAnimator.SetBool("fall", false);
+                //squashStretchController.ResetScale();
+                //squashStretchController.BounceVertSquash();
+            } else {
+                squashStretchAnimator.SetBool("fall", true);
+                //squashStretchController.ResetScale();
+                //squashStretchController.HorizSquash();
+            }
+        }
+
+        groundedLastFrame = movement.isGrounded;
     }
 
     public void OnMove(InputAction.CallbackContext value) {
@@ -55,10 +72,11 @@ public class PlayerController : MonoBehaviour
     public void OnJump(InputAction.CallbackContext value) {
         if (value.started) {
             lastInputState.jumpIsDown = true;
-            playerAnimator.SetBool("jumping", true);
         } else if (value.canceled) {
-            lastInputState.jumpIsDown = false;
             playerAnimator.SetBool("jumping", false);
+            if (value.canceled) {
+                lastInputState.jumpIsDown = false;
+            }
         }
     }
 

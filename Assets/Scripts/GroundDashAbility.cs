@@ -54,7 +54,7 @@ public class GroundDashAbility : Character2DMovementAbility
         }
     }
 
-    public override void UpdateTargetVelocities(float deltaTime, ref Vector2 targetVelocity, ref Vector2 changeSpeed, ref Vector2 minVelocity, ref Vector2 maxVelocity) {
+    public override void UpdateTargetVelocities(float deltaTime, ref Vector2 currentVelocity, ref Vector2 targetVelocity, ref Vector2 changeSpeed, ref Vector2 minVelocity, ref Vector2 maxVelocity) {
         if (isDashing) {
             maxVelocity.x = controller.Settings.groundDashMaxVelocityX;
             minVelocity.x = -controller.Settings.groundDashMaxVelocityX;

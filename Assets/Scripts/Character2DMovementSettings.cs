@@ -29,6 +29,8 @@ public class Character2DMovementSettings : ScriptableObject
     public float airDashMaxVelocityXY = 30f;
     public float airDashAccelerationXY = 30f;
     public float airDashDecayXY = 15f;
+    public bool airDashIgnoreVelX = true;
+    public bool airDashIgnoreVelY = true;
 
     [Header("Ability: Ground Dash")]
     public float groundDashMaxVelocityX = 30f;

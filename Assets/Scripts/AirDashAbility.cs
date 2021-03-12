@@ -37,12 +37,22 @@ public class AirDashAbility : Character2DMovementAbility
         }
     }
 
-    public override void UpdateTargetVelocities(float deltaTime, ref Vector2 targetVelocity, ref Vector2 changeSpeed, ref Vector2 minVelocity, ref Vector2 maxVelocity) {
+    public override void UpdateTargetVelocities(float deltaTime, ref Vector2 currentVelocity, ref Vector2 targetVelocity, ref Vector2 changeSpeed, ref Vector2 minVelocity, ref Vector2 maxVelocity) {
         if (dashInputDown && controller.isGrounded == false && isDashing == false && hasDashCharge) {
             isDashing = true;
             hasDashCharge = false;
             currentMaxVelocity = new Vector2(controller.Settings.airDashMaxVelocityXY, controller.Settings.airDashMaxVelocityXY);
+
             targetVelocity = moveInput.normalized * controller.Settings.airDashMaxVelocityXY;
+
+            if (controller.Settings.airDashIgnoreVelY) {
+                currentVelocity.y = 0f;
+            }
+
+            if (controller.Settings.airDashIgnoreVelX) {
+                currentVelocity.x = 0f;
+            }
+
             changeSpeed.x = controller.Settings.airDashAccelerationXY;
             changeSpeed.y = controller.Settings.airDashAccelerationXY;
         }

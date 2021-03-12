@@ -29,5 +29,7 @@ MonoBehaviour:
   airDashMaxVelocityXY: 35
   airDashAccelerationXY: 40
   airDashDecayXY: 150
+  airDashIgnoreVelX: 1
+  airDashIgnoreVelY: 1
   groundDashMaxVelocityX: 16
   groundDashAccelerationX: 20

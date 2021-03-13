@@ -39,6 +39,7 @@ public class Character2DMovementController : MonoBehaviour
 
     [SerializeField] public bool disableRespawn = false;
     [SerializeField] public float lastHitAngle = 0f;
+    [SerializeField] public float lastSignedHitAngle = 0f;
 
     [SerializeField] public bool debugMovement = false;
     [SerializeField] public float debugMovementDuration = 1.5f;
@@ -276,6 +277,13 @@ public class Character2DMovementController : MonoBehaviour
                 if (velocity.y <= 0f) {
                     isGrounded = true;
                     velocity.y = 0f;
+                }
+            } else if (hitAngle == 90f) {
+                if (raycastHits[i].point.x > transform.position.x && velocity.x > 0f) {
+                    // to the right
+                    velocity.x = 0f;
+                } else if (raycastHits[i].point.x < transform.position.x && velocity.x < 0f) {
+                    velocity.x = 0f;
                 }
             }
         }

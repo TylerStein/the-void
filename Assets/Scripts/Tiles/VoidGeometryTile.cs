@@ -8,7 +8,10 @@ using UnityEngine.Tilemaps;
 
 [CreateAssetMenu(fileName = "New VoidGeometry Tile", menuName = "Tilemap/Void Geometry Tile", order = 1)]
 public class VoidGeometryTile : RuleTile<VoidGeometryTile.Neighbor> {
-    //public bool useEdgeCollider = false;
+    public bool useTopCollider = true;
+    public bool useBottomCollider = false;
+    public bool useLeftCollider = false;
+    public bool useRightCollider = false;
 
     public class Neighbor : RuleTile.TilingRule.Neighbor {
         public const int Null = 3;

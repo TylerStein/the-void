@@ -68,6 +68,12 @@ TextureImporter:
   - first:
       213: -4730266683516005541
     second: Master_Sheet_21
+  - first:
+      213: 6480263985621236404
+    second: Master_Sheet_22
+  - first:
+      213: 7284889182525513570
+    second: Master_Sheet_23
   externalObjects: {}
   serializedVersion: 11
   mipmaps:
@@ -658,6 +664,48 @@ TextureImporter:
       bones: []
       spriteID: b53d92c6387ba5eb0800000000000000
       internalID: -4730266683516005541
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Master_Sheet_22
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 416
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4baf5b1d2c58ee950800000000000000
+      internalID: 6480263985621236404
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Master_Sheet_23
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 416
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 26fd4805d10291560800000000000000
+      internalID: 7284889182525513570
       vertices: []
       indices: 
       edges: []

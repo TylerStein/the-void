@@ -52,6 +52,9 @@ public class Character2DMovementController : MonoBehaviour
     private new BoxCollider2D collider;
     private new Rigidbody2D rigidbody;
 
+    public GameObject[] contactObjects = new GameObject[3];
+    public int contactObjectCount = 0;
+
     public UnityEvent respawnEvent = new UnityEvent();
 
     /**
@@ -183,12 +186,17 @@ public class Character2DMovementController : MonoBehaviour
         Vector2 maxVelocity = Vector2.positiveInfinity;
 
         UpdateTargetVelocities(deltaTime, ref vel, ref targetVelocity, ref changeSpeed, ref minVelocity, ref maxVelocity);
+
         UpdateVelocity(deltaTime, ref vel, targetVelocity, changeSpeed);
         ClampVelocity(deltaTime, ref vel, ref minVelocity, ref maxVelocity);
         UpdateCollision(deltaTime, ref vel, ref pos);
 
         UpdateTransform(deltaTime, pos, vel);
         UpdatePostMovement(deltaTime);
+
+        for (int i = 0; i < contactObjectCount; i++) {
+            contactObjects[i].SendMessage("UpdateContact", this, SendMessageOptions.DontRequireReceiver);
+        }
 
         if (debugMovement) {
             Debug.DrawLine(lastPos, transform.position, Color.yellow, debugMovementDuration);
@@ -252,6 +260,7 @@ public class Character2DMovementController : MonoBehaviour
     }
 
     private void UpdateCollision(float deltaTime, ref Vector2 velocity, ref Vector3 position) {
+        contactObjectCount = 0;
         Vector3 move = velocity * Time.deltaTime;
         int hitCount = collider.Cast(move.normalized, colliderContactFilter, raycastHits, move.magnitude);
 
@@ -272,18 +281,41 @@ public class Character2DMovementController : MonoBehaviour
 
             // Hit something solid
             position = raycastHits[i].centroid;
-            if (hitAngle < 90f) {
-                // Hit the ground, make sure we're not trying to jump
-                if (velocity.y <= 0f) {
-                    isGrounded = true;
-                    velocity.y = 0f;
+            if (hitAngle == 180f || hitAngle == 0f) {
+                // Ground or ceiling
+                if (raycastHits[i].collider is EdgeCollider2D) {
+                    // Is edge, allow passthrough
+                    if (velocity.y <= 0f) {
+                        isGrounded = true;
+                        contactObjects[contactObjectCount] = raycastHits[i].collider.gameObject;
+                        contactObjectCount++;
+                        velocity.y = 0f;
+                    }
+                } else {
+                    if (velocity.y <= 0f && raycastHits[i].point.y < transform.position.y) {
+                        // Is falling and below
+                        isGrounded = true;
+                        contactObjects[contactObjectCount] = raycastHits[i].collider.gameObject;
+                        contactObjectCount++;
+                        velocity.y = 0f;
+                    } else if (velocity.y >= 0f && raycastHits[i].point.y > transform.position.y) {
+                        // Is rising and above
+                        velocity.y = 0f;
+                        contactObjects[contactObjectCount] = raycastHits[i].collider.gameObject;
+                        contactObjectCount++;
+                    }
                 }
             } else if (hitAngle == 90f) {
                 if (raycastHits[i].point.x > transform.position.x && velocity.x > 0f) {
                     // to the right
                     velocity.x = 0f;
+                    contactObjects[contactObjectCount] = raycastHits[i].collider.gameObject;
+                    contactObjectCount++;
                 } else if (raycastHits[i].point.x < transform.position.x && velocity.x < 0f) {
+                    // to the left
                     velocity.x = 0f;
+                    contactObjects[contactObjectCount] = raycastHits[i].collider.gameObject;
+                    contactObjectCount++;
                 }
             }
         }

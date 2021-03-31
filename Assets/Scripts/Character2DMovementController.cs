@@ -34,8 +34,11 @@ public class Character2DMovementController : MonoBehaviour
     [SerializeField] public float lastDashDir = 0f;
     [SerializeField] public bool isReversing = false;
     [SerializeField] public ContactFilter2D colliderContactFilter;
-    [SerializeField] public Collider2D[] overlapColliders = new Collider2D[3];
-    [SerializeField] public RaycastHit2D[] raycastHits = new RaycastHit2D[3];
+
+    [SerializeField] public int hitCount = 0;
+    [SerializeField] public Collider2D[] overlapColliders = new Collider2D[4];
+    [SerializeField] public float[] hitAngles = new float[4];
+    [SerializeField] public RaycastHit2D[] raycastHits = new RaycastHit2D[4];
 
     [SerializeField] public bool disableRespawn = false;
     [SerializeField] public float lastHitAngle = 0f;
@@ -55,6 +58,7 @@ public class Character2DMovementController : MonoBehaviour
     public GameObject[] contactObjects = new GameObject[3];
     public int contactObjectCount = 0;
 
+    private bool shouldRespawn = false;
     public UnityEvent respawnEvent = new UnityEvent();
 
     /**
@@ -166,12 +170,21 @@ public class Character2DMovementController : MonoBehaviour
 
     private void Update() {
         if (worldBounds.Contains(transform.position) == false && !disableRespawn) {
+            shouldRespawn = true;
+        }
+
+        if (shouldRespawn) {
+            shouldRespawn = false;
             respawnEvent.Invoke();
             transform.position = respawn.position;
             velocity = Vector2.zero;
         } else {
             UpdateMovement(Time.deltaTime);
         }
+    }
+
+    public void Respawn() {
+        if (!disableRespawn) shouldRespawn = true;
     }
 
     public void UpdateMovement(float deltaTime) {
@@ -262,26 +275,26 @@ public class Character2DMovementController : MonoBehaviour
     private void UpdateCollision(float deltaTime, ref Vector2 velocity, ref Vector3 position) {
         contactObjectCount = 0;
         Vector3 move = velocity * Time.deltaTime;
-        int hitCount = collider.Cast(move.normalized, colliderContactFilter, raycastHits, move.magnitude);
+        hitCount = collider.Cast(move.normalized, colliderContactFilter, raycastHits, move.magnitude);
 
         bool wasGrounded = isGrounded;
         isGrounded = false;
         for (int i = 0; i < hitCount; i++) {
             if (raycastHits[i].collider == collider) continue;
 
-            float hitAngle = Vector2.Angle(raycastHits[i].normal, Vector2.up);
-            lastHitAngle = hitAngle;
+            hitAngles[i] = Vector2.Angle(raycastHits[i].normal, Vector2.up);
+            lastHitAngle = hitAngles[i];
 
             // Move up through ground
             if (raycastHits[i].collider is EdgeCollider2D) {
-                if (hitAngle > 90f && velocity.y > 0f) {
+                if (hitAngles[i] > 90f && velocity.y > 0f) {
                     continue;
                 }
             }
 
             // Hit something solid
             position = raycastHits[i].centroid;
-            if (hitAngle == 180f || hitAngle == 0f) {
+            if (hitAngles[i] == 180f || hitAngles[i] == 0f) {
                 // Ground or ceiling
                 if (raycastHits[i].collider is EdgeCollider2D) {
                     // Is edge, allow passthrough
@@ -305,7 +318,7 @@ public class Character2DMovementController : MonoBehaviour
                         contactObjectCount++;
                     }
                 }
-            } else if (hitAngle == 90f) {
+            } else if (hitAngles[i] == 90f) {
                 if (raycastHits[i].point.x > transform.position.x && velocity.x > 0f) {
                     // to the right
                     velocity.x = 0f;
